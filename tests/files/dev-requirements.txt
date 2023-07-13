@@ -1,0 +1,4 @@
+-r requirements.txt
+
+black >= 23.1
+isort

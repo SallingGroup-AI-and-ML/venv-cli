@@ -1,0 +1,9 @@
+black==23.7.0
+click==8.1.4
+isort==5.12.0
+mypy-extensions==1.0.0
+numpy==1.25.1
+packaging==23.1
+pathspec==0.11.1
+platformdirs==3.8.1
+tomli==2.0.1

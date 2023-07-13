@@ -1,3 +1,5 @@
+[![Linting and tests](https://github.com/SallingGroup-AI-and-ML/venv-cli/actions/workflows/run_tests.yml/badge.svg)](https://github.com/SallingGroup-AI-and-ML/venv-cli/actions/workflows/run_tests.yml)
+
 # venv-cli - A CLI tool to create and manage virtual python environments.
 
 ## Overview

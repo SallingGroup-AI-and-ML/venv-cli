@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from test_venv_create import test_venv_create
 from tests.helpers import run_command
+from tests.test_venv_create import test_venv_create
 
 
 @pytest.mark.order(after="test_venv_create.py::test_venv_create")

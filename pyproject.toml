@@ -1,6 +1,7 @@
 [tool.mypy]
 python_version = "3.10"
 files = "**/*.py"
+explicit_package_bases = true
 
 [tool.isort]
 profile = "black"

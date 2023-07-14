@@ -23,19 +23,34 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: "3.10"
+
+    - name: Install zsh
+      run: sudo apt-get update; sudo apt-get install -y zsh
+
     - name: Install dependencies
       run: |
         python3.10 -m venv .venv --prompt="venv-cli"
         . .venv/bin/activate
         python -m pip install --require-virtualenv --upgrade pip
         python -m pip install --require-virtualenv -r dev-requirements.txt
+
     - name: Check linting/formatting
       run: |
         . .venv/bin/activate
         python -m isort --check .
         python -m black --config pyproject.toml --check .
         python -m mypy --config-file pyproject.toml
-    - name: Test with pytest
+
+    - name: Test with pytest (bash)
       run: |
+        export SHELL="/usr/bin/bash"
         . .venv/bin/activate
         python -m pytest -n auto .
+      shell: /usr/bin/bash -e {0}
+
+    - name: Test with pytest (zsh)
+      run: |
+        export SHELL="/usr/bin/zsh"
+        . .venv/bin/activate
+        python -m pytest -n auto .
+      shell: /usr/bin/zsh -e {0}

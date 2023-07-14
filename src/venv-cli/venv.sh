@@ -175,7 +175,9 @@ venv::install() {
   fi
 
   venv::color_echo "${_green}" "Installing requirements from ${requirements_file}"
-  pip install --require-virtualenv -r "${requirements_file}" "$@"
+  if ! pip install --require-virtualenv -r "${requirements_file}" "$@"; then
+    return 1
+  fi
 
   local lock_file="${requirements_file/.txt/.lock}"  # Replace ".txt" with ".lock"
   if "${skip_lock}" || [ "${requirements_file}" = "${lock_file}" ]; then

@@ -26,7 +26,7 @@ venv::raise() {
 }
 
 venv::_check_if_help_requested() {
-  if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
+  if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
     return 0
   fi
   return 1
@@ -153,7 +153,7 @@ venv::install() {
   fi
 
   local requirements_file
-  if [ -z "$1" ] || [ "$1" == "--skip-lock" ]; then
+  if [ -z "$1" ] || [ "$1" = "--skip-lock" ]; then
     # If no argument passed
     requirements_file="requirements.txt"
 
@@ -169,16 +169,18 @@ venv::install() {
   fi
 
   local skip_lock=false
-  if [ "$1" == "--skip-lock" ]; then
+  if [ "$1" = "--skip-lock" ]; then
     skip_lock=true
     shift
   fi
 
   venv::color_echo "${_green}" "Installing requirements from ${requirements_file}"
-  pip install --require-virtualenv -r "${requirements_file}" "$@"
+  if ! pip install --require-virtualenv -r "${requirements_file}" "$@"; then
+    return 1
+  fi
 
   local lock_file="${requirements_file/.txt/.lock}"  # Replace ".txt" with ".lock"
-  if "${skip_lock}" || [ "${requirements_file}" == "${lock_file}" ]; then
+  if "${skip_lock}" || [ "${requirements_file}" = "${lock_file}" ]; then
     venv::color_echo "${_yellow}" "Skipping locking packages to ${lock_file}"
     return 0
   fi
@@ -215,7 +217,7 @@ venv::lock() {
   if [ -z "$1" ]; then
     lock_file="requirements.lock"
 
-  elif [[ "$1" == *"."* ]]; then
+  elif [[ "$1" = *"."* ]]; then
     if venv::_check_lock_requirements_file "$1"; then
       lock_file="$1"
       shift

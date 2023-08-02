@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import pytest
@@ -16,8 +17,8 @@ from tests.helpers import RequirementFiles, run_command
         "dev-requirements.lock",
     ],
 )
-def test_venv_install(file: str, venv_dir: RequirementFiles):
+def test_venv_install(file: str, venv_dir: RequirementFiles, create_test_credentials: None):
     """Checks that we can install requirements in an activated environment"""
     file_path: str | Path = venv_dir.get(file, file)
 
-    run_command(f"venv install {file_path}", activated=True, cwd=venv_dir["base"])
+    run_command(f"venv install {file_path} --skip-lock", activated=True, cwd=venv_dir["base"])

@@ -19,13 +19,15 @@ from tests.helpers import RequirementFiles, run_command
         "dev-requirements.lock",
     ],
 )
-def test_venv_sync(lock_file: str, venv_dir: RequirementFiles, capfd: pytest.CaptureFixture):
+def test_venv_sync(
+    lock_file: str, venv_dir: RequirementFiles, create_test_credentials: None, capfd: pytest.CaptureFixture
+):
     """Checks that we can run 'venv sync' to clear the environment and then install locked requirements"""
     lock_file_path: str | Path = venv_dir.get(lock_file, lock_file)
 
     run_command(commands=[f"venv sync {lock_file_path}"], activated=True, cwd=venv_dir["base"])
 
-    captured = capfd.readouterr()
-    assert "Removing all packages" in captured.out
-    assert "All packages removed" in captured.out
-    assert "Installing requirements from" in captured.out
+    output = capfd.readouterr().out
+    assert "Removing all packages" in output
+    assert "All packages removed" in output
+    assert "Installing requirements from" in output

@@ -7,6 +7,14 @@ from tests.helpers import RequirementFiles
 
 
 @pytest.fixture
+def create_test_credentials(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Create test credentials for use in requirement files."""
+    monkeypatch.setenv(name="TEST_USER", value="test-user")
+    monkeypatch.setenv(name="TEST_PASS", value="test-pass")
+    monkeypatch.setenv(name="TEST_TOKEN", value="test-token")
+
+
+@pytest.fixture
 def venv_dir(tmp_path: Path) -> RequirementFiles:
     """
     This fixture uses the temporary directory at 'tmp_path' supplied by pytest as the base directory

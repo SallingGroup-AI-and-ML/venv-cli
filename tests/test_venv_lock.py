@@ -25,7 +25,13 @@ from tests.helpers import RequirementFiles, run_command
     ],
     # fmt: on
 )
-def test_venv_lock(install_file: str, lock_arg: str, lock_file: str, venv_dir: RequirementFiles):
+def test_venv_lock(
+    install_file: str,
+    lock_arg: str,
+    lock_file: str,
+    venv_dir: RequirementFiles,
+    create_test_credentials: None,
+):
     """Checks that we can lock requirements in an environment after installing them"""
     install_file_path: str | Path = venv_dir.get(install_file, install_file)
 

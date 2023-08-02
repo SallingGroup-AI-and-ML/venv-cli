@@ -10,11 +10,11 @@ def test_venv_help(arg: str, tmp_path: Path, capfd: pytest.CaptureFixture):
     """Checks that we can get the help menu for the main 'venv' command"""
     run_command(f"venv {arg}", cwd=tmp_path)
 
-    captured = capfd.readouterr()
-    assert "Utility to help create and manage python virtual environments" in captured.out
-    assert "Syntax:" in captured.out
-    assert "available commands" in captured.out
-    assert "Show this help" in captured.out
+    output = capfd.readouterr().out
+    assert "Utility to help create and manage python virtual environments" in output
+    assert "Syntax:" in output
+    assert "available commands" in output
+    assert "Show this help" in output
 
 
 @pytest.mark.parametrize(
@@ -34,6 +34,6 @@ def test_venv_command_help(command: str, help_arg: str, tmp_path: Path, capfd: p
     """Checks that we can get the help menu for 'venv <command>'"""
     run_command(f"venv {command} {help_arg}", cwd=tmp_path)
 
-    captured = capfd.readouterr()
-    assert f"venv {command}" in captured.out
-    assert "Examples" in captured.out
+    output = capfd.readouterr().out
+    assert f"venv {command}" in output
+    assert "Examples" in output

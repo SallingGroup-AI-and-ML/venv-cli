@@ -11,5 +11,5 @@ def test_venv_raise(message: str, capfd: pytest.CaptureFixture):
     with pytest.raises(subprocess.CalledProcessError):
         run_command(f"venv::raise {message}")
 
-    captured = capfd.readouterr()
-    assert message.replace('"', "") in captured.out
+    output = capfd.readouterr().out
+    assert message.replace('"', "") in output

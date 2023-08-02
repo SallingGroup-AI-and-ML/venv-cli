@@ -5,6 +5,7 @@ _green="\033[32m"
 _yellow="\033[01;33m"
 _red="\033[31m"
 
+# Version number has to follow pattern "^v\d+\.\d+\.\d+.*$"
 _version="v1.0.1"
 
 venv::_version() {

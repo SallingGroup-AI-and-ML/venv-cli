@@ -1,15 +1,17 @@
 import re
-from pathlib import Path
 
 import pytest
 
 from tests.helpers import run_command
 
+_version_pattern = re.compile(r"^venv-cli v\d+\.\d+\.\d+.*$")
+
 
 @pytest.mark.parametrize("arg", ["-V", "--version"])
-def test_venv_help(arg: str, tmp_path: Path, capfd: pytest.CaptureFixture):
-    """Checks that we can show the version number"""
-    run_command(f"venv {arg}", cwd=tmp_path)
+def test_venv_version(arg: str, capfd: pytest.CaptureFixture):
+    """Checks that we can show the version number, and that the version number
+    complies with the required pattern"""
+    run_command(f"venv {arg}")
 
-    captured = capfd.readouterr()
-    assert re.search(r"venv-cli\s\d+?\.\d+?\.\d+?", captured.out)
+    output = capfd.readouterr().out
+    assert re.match(_version_pattern, output.strip())

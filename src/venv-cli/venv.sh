@@ -6,7 +6,7 @@ _yellow="\033[01;33m"
 _red="\033[31m"
 
 # Version number has to follow pattern "^v\d+\.\d+\.\d+.*$"
-_version="v1.0.1"
+_version="v1.0.2"
 
 venv::_version() {
   echo "venv-cli ${_version}"

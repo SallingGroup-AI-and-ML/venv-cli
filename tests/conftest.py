@@ -3,35 +3,31 @@ from shutil import copy2
 
 import pytest
 
-from tests.helpers import Files
+from tests.helpers import RequirementFiles
 
 
 @pytest.fixture
-def venv_dir(tmp_path: Path) -> Files:
+def create_test_credentials(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Create test credentials for use in requirement files."""
+    monkeypatch.setenv(name="TEST_USER", value="test-user")
+    monkeypatch.setenv(name="TEST_PASS", value="test-pass")
+    monkeypatch.setenv(name="TEST_TOKEN", value="test-token")
+
+
+@pytest.fixture
+def venv_dir(tmp_path: Path) -> RequirementFiles:
+    """
+    This fixture uses the temporary directory at 'tmp_path' supplied by pytest as the base directory
+    for creating a virtual environment. It then copies all requirements files from 'tests/files' into
+    the directory and returns a Files dictionary containing the path to the files in the temp dir.
+    """
     src = Path.cwd() / "tests" / "files"
     dst = tmp_path
-    reqs = Path("requirements")
-    dev_reqs = Path("dev-requirements")
 
-    files = Files(
+    files = RequirementFiles(
         {
             "base": dst,
-            "requirements.txt": copy2(
-                src=src / reqs.with_suffix(".txt"),
-                dst=dst / reqs.with_suffix(".txt"),
-            ),
-            "requirements.lock": copy2(
-                src=src / reqs.with_suffix(".lock"),
-                dst=dst / reqs.with_suffix(".lock"),
-            ),
-            "dev-requirements.txt": copy2(
-                src=src / dev_reqs.with_suffix(".txt"),
-                dst=dst / dev_reqs.with_suffix(".txt"),
-            ),
-            "dev-requirements.lock": copy2(
-                src=src / dev_reqs.with_suffix(".lock"),
-                dst=dst / dev_reqs.with_suffix(".lock"),
-            ),
+            **{file.name: copy2(src=file, dst=dst / file.name) for file in src.glob("*requirements.*")},
         }
     )
     return files

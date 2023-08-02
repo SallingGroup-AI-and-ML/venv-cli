@@ -13,11 +13,10 @@ permissions:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v3
+
     - name: Set up Python 3.10
       uses: actions/setup-python@v3
       with:
@@ -28,7 +27,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        python3.10 -m venv .venv --prompt="venv-cli"
+        python3.10 -m venv .venv
         . .venv/bin/activate
         python -m pip install --require-virtualenv --upgrade pip
         python -m pip install --require-virtualenv -r dev-requirements.txt

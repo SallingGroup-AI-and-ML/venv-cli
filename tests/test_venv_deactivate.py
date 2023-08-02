@@ -15,5 +15,5 @@ def test_venv_deactivate_noop(tmp_path: Path, capfd: pytest.CaptureFixture):
     """Checks that trying to deactivate an environment that is not activated does nothing"""
     run_command("venv deactivate", cwd=tmp_path)
 
-    captured = capfd.readouterr()
-    assert "No virtual environment currently active, nothing to deactivate" in captured.out
+    output = capfd.readouterr().out
+    assert "No virtual environment currently active, nothing to deactivate" in output

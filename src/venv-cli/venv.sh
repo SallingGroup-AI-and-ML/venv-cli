@@ -5,7 +5,7 @@ _green="\033[32m"
 _yellow="\033[01;33m"
 _red="\033[31m"
 
-_version="1.0.0"
+_version="v1.0.1"
 
 venv::_version() {
   echo "venv-cli ${_version}"

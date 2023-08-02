@@ -2,6 +2,14 @@
 
 ## [v1.1.0](https://github.com/SallingGroup-AI-and-ML/venv-cli/releases/tag/v1.1.0) (2023-08-02)
 
+### New install script
+This release adds an `install.sh` script for easier installation of `venv-cli`. Now it can be installed by simply running
+```console
+$ bash install.sh
+```
+
+For more information on installing and uninstalling, see the updated [README](https://github.com/SallingGroup-AI-and-ML/venv-cli/blob/v1.1.0/README.md)
+
 ### Internal changes
 
 * Added functionality to `venv lock`: Since `pip freeze` (which `venv lock` is using under the hood) does not output the `auth`-part of VCS URLs, `venv lock` now includes a fix that tries to read them from a reference `requirements`-file, but **only if they are specified as environment variables** so as not to accidentally expose secrets in version-controlled `.lock`-files.

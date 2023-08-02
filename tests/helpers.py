@@ -1,3 +1,4 @@
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -8,7 +9,7 @@ _venv_cli_path = Path.cwd() / "src" / "venv-cli" / "venv.sh"
 
 
 def _command_setup(venv_cli_path: Path, activate: bool = False) -> list[str]:
-    bash = ["/bin/bash", "-c"]
+    bash = [os.environ["SHELL"], "-c"]
     source_command = f". {venv_cli_path}"
 
     additional_commands: list[str] = []

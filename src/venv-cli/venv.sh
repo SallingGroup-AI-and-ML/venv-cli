@@ -1,5 +1,8 @@
 #!/bin/bash
 
+_success=0
+_fail=1
+
 _normal="\033[00m"
 _green="\033[32m"
 _yellow="\033[01;33m"
@@ -8,9 +11,14 @@ _red="\033[31m"
 # Version number has to follow pattern "^v\d+\.\d+\.\d+.*$"
 _version="v1.0.2"
 
+# Valid VCS URL environment variable pattern
+# https://peps.python.org/pep-0610/#specification
+_env_var_auth_pattern='\${[-_A-Za-z0-9]+}(:\${[-_A-Za-z0-9]+})?'
+
+
 venv::_version() {
   echo "venv-cli ${_version}"
-  return 0
+  return "${_success}"
 }
 
 venv::color_echo() {
@@ -23,30 +31,52 @@ venv::raise() {
   if [ -n "$1" ]; then
     venv::color_echo "${_red}" "$1"
   fi
-  return 1
+  return "${_fail}"
 }
 
 venv::_check_if_help_requested() {
   if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
-    return 0
+    return "${_success}"
   fi
-  return 1
+  return "${_fail}"
 }
 
 venv::_check_install_requirements_file() {
-  local file_pattern="^.*?requirements\.(txt|lock)"
+  ### Check whether the first argument matches the pattern for a requirements file.
+  ### If not, raises error (silently if called with '-q')
+  local file_pattern="^.*?requirements\.(txt|lock)$"
   if [[ ! "$1" =~ $file_pattern ]]; then
-    venv::raise "Input file name must have format '*requirements.txt' or '*requirements.lock'"
+    local message=""
+    if [ "$2" != "-q" ]; then
+      message="Input file name must have format '*requirements.txt' or '*requirements.lock', was '$1'"
+    fi
+    venv::raise "${message}"
     return "$?"
   fi
 }
 
 venv::_check_lock_requirements_file() {
+  ### Check whether the first argument matches the pattern for a lock file.
+  ### If not, raises error (silently if called with '-q')
   local file_pattern="^.*?requirements\.lock$"
   if [[ ! "$1" =~ $file_pattern ]]; then
-    venv::raise "Lock file name must have format '*requirements.lock'"
+    local message=""
+    if [ "$2" != "-q" ]; then
+      message="Lock file name must have format '*requirements.lock', was '$1'"
+    fi
+    venv::raise "${message}"
     return "$?"
   fi
+}
+
+venv::_get_lock_from_requirements() {
+  local requirements_file="$1"
+  echo "${requirements_file/.txt/.lock}"
+}
+
+venv::_get_requirements_from_lock() {
+  local lock_file="$1"
+  echo "${lock_file/.lock/.txt}"
 }
 
 
@@ -55,7 +85,7 @@ venv::create() {
     echo "venv create <python-version> [<name>]"
     echo
     echo "Create a new virtual environment using python version <python-version>."
-    echo "The virtual environment will be placed in '.venv', "
+    echo "The virtual environment will be placed in '.venv',"
     echo "and when activated will be named the same as the containing folder."
     echo "It is also possible to specify the name that will be used in the shell prompt."
     echo
@@ -66,9 +96,9 @@ venv::create() {
     echo "This will create a virtual environment in '.venv' called 'my-39-env' using python3.9."
     echo
     echo "$ venv create 3.9"
-    echo "When run from a folder called 'my-folder', this wil create a virtual environment "
+    echo "When run from a folder called 'my-folder', this wil create a virtual environment"
     echo "called 'my-folder' using python3.9."
-    return 0
+    return "${_success}"
   fi
 
   if [ -z "$1" ]; then
@@ -108,7 +138,7 @@ venv::activate() {
     echo
     echo "Examples:"
     echo "$ venv activate"
-    return 0
+    return "${_success}"
   fi
 
   . ./.venv/bin/activate
@@ -123,7 +153,7 @@ venv::deactivate() {
     echo
     echo "Examples:"
     echo "$ venv deactivate"
-    return 0
+    return "${_success}"
   fi
 
   if ! deactivate 2> /dev/null; then
@@ -134,34 +164,39 @@ venv::deactivate() {
 
 venv::install() {
   if venv::_check_if_help_requested "$1"; then
-    echo "venv install [<requirements file>] [--skip-lock]"
+    echo "venv install [<requirements file>] [--skip-lock] [<install args>]"
     echo
-    echo "Install requirements from <requirements file>, like 'requirements.txt' or 'requirements.lock'."
-    echo "Installed packages are then locked into the corresponding .lock-file, "
+    echo "Install requirements from <requirements file>, like 'requirements.txt'"
+    echo "or 'requirements.lock'."
+    echo "Installed packages are then locked into the corresponding .lock-file,"
     echo "e.g. 'venv install requirements.txt' will lock packages into 'requirements.lock'."
-    echo "This step is skipped if '--skip-lock' is specified, or when installing directly from a .lock-file."
+    echo "This step is skipped if '--skip-lock' is specified, or when installing"
+    echo "directly from a .lock-file."
     echo
     echo "The <requirements file> must be in the form '*requirements.[txt|lock]'."
-    echo "If no arguments are passed, a default file name of 'requirements.txt' will be used."
+    echo "If no arguments are passed, a default file name of 'requirements.txt'"
+    echo "will be used."
+    echo
+    echo "Additional <install args> are passed on to 'pip install'."
     echo
     echo "Examples:"
     echo "$ venv install"
     echo
     echo "$ venv install dev-requirements.txt"
     echo
-    echo "$ venv install requirements.txt --skip-lock"
-    return 0
+    echo "$ venv install requirements.txt --skip-lock --no-cache"
+    return "${_success}"
   fi
 
   local requirements_file
   if [ -z "$1" ] || [ "$1" = "--skip-lock" ]; then
-    # If no argument passed
+    # If no filename was passed
     requirements_file="requirements.txt"
 
   else
     if ! venv::_check_install_requirements_file "$1"; then
       # Fail if file name doesn't match required format
-      return 1
+      return "${_fail}"
     fi
 
     # If full requirements file (.txt or .lock) passed
@@ -176,61 +211,145 @@ venv::install() {
   fi
 
   venv::color_echo "${_green}" "Installing requirements from ${requirements_file}"
-  if ! pip install --require-virtualenv -r "${requirements_file}" "$@"; then
-    return 1
+  if ! pip install --require-virtualenv --use-pep517 -r "${requirements_file}" "$@"; then
+    return "${_fail}"
   fi
 
-  local lock_file="${requirements_file/.txt/.lock}"  # Replace ".txt" with ".lock"
-  if "${skip_lock}" || [ "${requirements_file}" = "${lock_file}" ]; then
+  local lock_file="$(venv::_get_lock_from_requirements "${requirements_file}")"
+  if "${skip_lock}" || [ "${requirements_file}" == "${lock_file}" ]; then
     venv::color_echo "${_yellow}" "Skipping locking packages to ${lock_file}"
-    return 0
+    return "${_success}"
   fi
 
-  venv::lock "${lock_file}"
+  venv::lock "${requirements_file}" "${lock_file}"
   return "$?"  # Return exit status from venv::lock command
+}
+
+
+venv::_fill_credentials() {
+  ### Read VCS URL auth from requirements file and fill in lock file URLs
+  local requirements_file="$1"
+  local lock_file="$2"
+
+  # Loop over every line in requirements file
+  while IFS= read -r req_line; do
+    # Extract package name from requirement
+    local package=$(echo "${req_line}" | command awk '{print $1}')
+    # Extract VCS URL from requirement
+    local url_req=$(echo "${req_line}" | command awk '{print $3}')
+
+    # Extract environment variable(s) from the URL
+    local env_vars=$(echo "${url_req}" | command grep -oE "${_env_var_auth_pattern}")
+    if [ -z "${env_vars}" ]; then
+      # No env vars in the url (or no url at all), skip line
+      continue
+    fi
+
+    # Use sed to fill in $env_vars after "https://"-section, so a line like
+    # 'asdf-lib @ git+https://github.com/someuser/asdf-lib@commithash'
+    # becomes e.g.
+    # 'asdf-lib @ git+https://${AUTH_TOKEN}@github.com/someuser/asdf-lib@commithash'
+    # or
+    # 'asdf-lib @ git+https://${USERNAME}:${PASSWORD}@github.com/someuser/asdf-lib@commithash'
+    local before_auth_pattern="^(${package} @ [a-zA-Z+]*?https?://)"
+    local after_auth_pattern="(.*?)$"
+    local fill_pattern="\1${env_vars}@\2"
+    command sed -i -E "s|${before_auth_pattern}${after_auth_pattern}|${fill_pattern}|" "${lock_file}"
+
+  done < "${requirements_file}"
 }
 
 
 venv::lock() {
   if venv::_check_if_help_requested "$1"; then
     echo "venv lock [<lock file>|<lock file prefix>]"
+    echo "venv lock <requirements file> <lock file>"
     echo
     echo "Lock all installed package versions and write them to <lock file>."
     echo "The <lock file> must be in the form '*requirements.lock'."
     echo
-    echo "If <lock file prefix> is specified instead, locks the requirements to "
+    echo "If <lock file prefix> is specified instead, locks the requirements to"
     echo "a file called '<lock file prefix>-requirements.lock'."
     echo
     echo "If no <lock file> is specified, defaults to 'requirements.lock'."
     echo
+    echo "This function uses 'pip freeze' to lock the requirements, but since"
+    echo "'pip freeze' does not include the auth-part of VCS URLs, this command"
+    echo "needs a reference 'requirements.txt'-file to extract the credentials from."
+    echo
+    echo "In the first form, where only <lock file> is specified, this command"
+    echo "looks for a reference <requirements file> with the same stem as <lock file>,"
+    echo "and with a '.txt' extension, e.g. 'venv lock dev-requirements.lock' will look"
+    echo "for a reference file 'dev-requirements.txt'."
+    echo
+    echo "In the second form, both the reference <requirements file> and the <lock file>"
+    echo "are specified."
+    echo
     echo "Examples:"
     echo "$ venv lock"
+    echo "This will lock requirements into 'requirements.lock',"
+    echo "referencing 'requirements.txt'."
     echo
     echo "$ venv lock dev-requirements.lock"
+    echo "This will lock requirements into 'dev-requirements.lock',"
+    echo "referencing 'dev-requirements.txt'."
     echo
     echo "$ venv lock dev"
-    echo "This will lock the requirements into a file named 'dev-requirements.lock'."
-    return 0
+    echo "This will lock requirements into 'dev-requirements.lock',"
+    echo "referencing 'dev-requirements.txt'."
+    return "${_success}"
   fi
 
+  local requirements_file
   local lock_file
-  # If nothing passed, default to "requirements.lock"
   if [ -z "$1" ]; then
+    # If nothing was passed, default to "requirements.lock" with "requirements.txt"
+    # as reference
     lock_file="requirements.lock"
+    requirements_file="requirements.txt"
 
   elif [[ "$1" = *"."* ]]; then
-    if venv::_check_lock_requirements_file "$1"; then
+    # If first argument looks like a file name ...
+
+    if venv::_check_lock_requirements_file "$1" -q; then
+      # In this case, the first argument is a lock file
       lock_file="$1"
+      requirements_file="$(venv::_get_requirements_from_lock "$1")"
       shift
+
+    elif $(venv::_check_install_requirements_file "$1" -q \
+        && venv::_check_lock_requirements_file "$2" -q); then
+      # In this case, the first argument is a requirements file and the second
+      # argument is a lock file
+      requirements_file="$1"
+      lock_file="$2"
+      shift 2
+
     else
-      return 1
+      venv::raise "Input file(s) had wrong format. See 'venv lock --help' for more info."
+      return "$?"
     fi
 
   else
+    # If first argument is not a full filename, assume it is a lock file prefix
     lock_file="$1-requirements.lock"
+    requirements_file="$1-requirements.txt"
   fi
 
+  if [ ! -f "${requirements_file}" ]; then
+    venv::raise "No reference requirements file found with name '${requirements_file}', aborting."
+    return "$?"
+  fi
+
+  # Write locked requirements into lock file
   pip freeze --require-virtualenv > "${lock_file}"
+
+  # Since 'pip freeze' does not include the auth-part of VCS URLs, we have to
+  # get those from the reference requirements file
+  if ! venv::_fill_credentials "${requirements_file}" "${lock_file}"; then
+    return "${_fail}"
+  fi
+
   venv::color_echo "${_green}" "Locked requirements in ${lock_file}"
 }
 
@@ -243,7 +362,7 @@ venv::clear() {
     echo
     echo "Examples:"
     echo "$ venv clear"
-    return 0
+    return "${_success}"
   fi
 
   venv::color_echo "${_yellow}" "Removing all packages from virtual environment ..."
@@ -258,7 +377,7 @@ venv::sync() {
   if venv::_check_if_help_requested "$1"; then
     echo "venv sync [<lock file>]"
     echo
-    echo "Remove all installed packages from the environment (venv clear) "
+    echo "Remove all installed packages from the environment (venv clear)"
     echo "and install all packages specified in <lock file>."
     echo "The <lock file> must be in the form '*requirements.lock'."
     echo
@@ -271,7 +390,7 @@ venv::sync() {
     echo "$ venv sync"
     echo "Tries to install from 'requirements.lock'."
     echo "Clears the environment and installs requirements from 'requirements.lock'."
-    return 0
+    return "${_success}"
   fi
 
   local lock_file
@@ -282,7 +401,7 @@ venv::sync() {
   # If full lock file passed
   else
     if ! venv::_check_lock_requirements_file "$1" "Can only sync using .lock file"; then
-      return 1
+      return "${_fail}"
     fi
 
     lock_file="$1"
@@ -308,7 +427,7 @@ venv::help() {
   echo "install        Install requirements from a requirements file in the current environment"
   echo "lock           Lock installed requirements in a '.lock'-file"
   echo "clear          Remove all installed packages in the current environment"
-  echo "sync           Run 'venv clear', then install locked requirements from a "
+  echo "sync           Run 'venv clear', then install locked requirements from a"
   echo "               '.lock'-file in the current environment"
   echo "deactivate     Deactivate the currently activated virtual environment"
   echo "-h, --help     Show this help and exit"

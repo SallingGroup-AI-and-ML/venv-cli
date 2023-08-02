@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from tests.helpers import Files, run_command
+from tests.helpers import RequirementFiles, run_command
 
 
 @pytest.mark.order(
@@ -19,7 +19,7 @@ from tests.helpers import Files, run_command
         "dev-requirements.lock",
     ],
 )
-def test_venv_sync(lock_file: str, venv_dir: Files, capfd: pytest.CaptureFixture):
+def test_venv_sync(lock_file: str, venv_dir: RequirementFiles, capfd: pytest.CaptureFixture):
     """Checks that we can run 'venv sync' to clear the environment and then install locked requirements"""
     lock_file_path: str | Path = venv_dir.get(lock_file, lock_file)
 

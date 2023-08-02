@@ -3,7 +3,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-Files = dict[str, Path]
+RequirementFiles = dict[str, Path]
 current_python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
 _venv_cli_path = Path.cwd() / "src" / "venv-cli" / "venv.sh"
 

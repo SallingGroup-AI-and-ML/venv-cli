@@ -6,6 +6,7 @@ From this release forward, this project follows the `Git Flow` branching model. 
 To read more about Git Flow, see (https://nvie.com/posts/a-successful-git-branching-model/). Also see [README](https://github.com/SallingGroup-AI-and-ML/venv-cli/blob/develop/README.md#git-flow) for branch naming conventions.
 
 * Changed github test workflow to reflect new branch naming conventions.
+* Added better, context-based bash completions.
 
 ## [v1.1.0](https://github.com/SallingGroup-AI-and-ML/venv-cli/releases/tag/v1.1.0) (2023-08-02)
 

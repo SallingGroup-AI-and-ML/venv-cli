@@ -5,7 +5,7 @@ name: Linting and tests
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "develop", "release/*" ]
   pull_request:
 
 permissions:

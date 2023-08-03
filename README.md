@@ -162,12 +162,25 @@ As this is meant to be a lightweight tool providing simple, QoL improvements to 
 
 That said, pull requests are welcome. For bigger changes, please open an issue first to discuss what you would like to change.
 
-To contribute, clone the repo, create a virtual environment (preferably using `venv-cli`) and install `dev-requirements.txt`. When you are done with your changes, run the test suite with
+To contribute, clone the repo and create a branch, create a virtual environment (preferably using `venv-cli`) and install `dev-requirements.txt`. When you are done with your changes, run the test suite with
 ```console
 $ pytest .
 ```
+then create a pull request for the `develop` branch.
 
 Every subcommand has its own test file `tests/test_venv_<command>.py` Please make sure to add/update tests as appropriate.
+
+### Git Flow
+This project follows the [Git Flow](https://nvie.com/posts/a-successful-git-branching-model/) branching model. The default development branch is accordingly named `develop`, and the branch `main` is reserved for tagged releases and hotfixes. Other branches should be named according to their purpose:
+```
+feature/<branch name>
+bugfix/<branch name>
+release/<branch name>
+hotfix/<branch name>
+support/<branch name>
+```
+
+Releases are made by creating a branch `release/vX.X.X` from `develop`, where `X.X.X` represents the release version number, following [SemVer](https://semver.org/). This freezes the version number of **this release**, and no more features from `develop` should be merged into this release (only `bugfix/`). When the `release/` branch is ready for release, merge it into `main` and tag the commit with the release version, then merge the `release/` branch back into `develop` (resolving any merge conflicts) to get the bugfixes included there as well.
 
 ## License
 

@@ -107,11 +107,11 @@ venv::create() {
   fi
 
   local python_version="$1"
-  local venv_prompt='.'
   local venv_name
   venv_name="$(basename "${PWD}")"
 
   # Check if a specific name for the "--prompt" was specified
+  local venv_prompt='.'
   if [ -n "$2" ]; then
     venv_prompt="$2"
     venv_name="${venv_prompt}"
@@ -124,7 +124,8 @@ venv::create() {
     return "$?"
   fi
 
-  venv::color_echo "${_green}" "Creating virtual environment '${venv_name}' using python${python_version}"
+  local full_python_version="$(${python_executable} -V)"
+  venv::color_echo "${_green}" "Creating virtual environment '${venv_name}' using ${full_python_version}"
   ${python_executable} -m venv .venv --prompt "${venv_prompt}"
 }
 

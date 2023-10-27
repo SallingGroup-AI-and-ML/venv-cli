@@ -301,7 +301,6 @@ venv::clear() {
   venv::color_echo "${_green}" "All packages removed!"
 }
 
-
 venv::help() {
   echo "Utility to help create and manage python virtual environments."
   echo "Lightweight wrapper around pip and venv."

@@ -51,4 +51,4 @@ def collect_requirements(
 
 def write_files(files: RequirementsDict, dir: Path) -> None:
     for filename, contents in files.items():
-        (dir / filename).write_text(contents)
+        (dir / filename).write_text(contents + "\n")

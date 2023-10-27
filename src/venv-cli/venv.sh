@@ -259,13 +259,12 @@ venv::lock() {
 
   elif [[ "$1" = *"."* ]]; then
     # If first argument looks like a file name ...
-    if !(venv::_check_lock_requirements_file "$1" -q); then
+    if venv::_check_lock_requirements_file "$1" -q; then
+      # ... and is a lock file
+      lock_file="$1"
+    else
       venv::raise "Input file(s) had wrong format. See 'venv lock --help' for more info."
       return "$?"
-
-    # ... and is a lock file
-    lock_file="$1"
-    shift
     fi
 
   else

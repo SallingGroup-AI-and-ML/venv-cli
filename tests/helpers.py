@@ -1,7 +1,11 @@
 import os
 import subprocess
 import sys
+from functools import wraps
 from pathlib import Path
+from typing import Callable
+
+from tests.types import P, RawFilesDict, RequirementsBase, RequirementsDict
 
 RequirementFiles = dict[str, Path]
 current_python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
@@ -31,3 +35,20 @@ def run_command(commands: str | list[str], cwd: Path = Path.cwd(), activated: bo
 
     result = subprocess.run(all_commands, cwd=cwd)
     result.check_returncode()
+
+
+def collect_requirements(
+    func: Callable[P, tuple[RawFilesDict, RequirementsBase]]
+) -> Callable[P, tuple[RequirementsDict, RequirementsBase]]:
+    @wraps(func)
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> tuple[RequirementsDict, RequirementsBase]:
+        files_dict, requirements_base = func(*args, **kwargs)
+        requirements_dict = {filename: "\n".join(requirements) for filename, requirements in files_dict.items()}
+        return requirements_dict, requirements_base
+
+    return wrapper
+
+
+def write_files(files: RequirementsDict, dir: Path) -> None:
+    for filename, contents in files.items():
+        (dir / filename).write_text(contents)

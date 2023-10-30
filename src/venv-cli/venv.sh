@@ -226,7 +226,7 @@ venv::install() {
     return "${_success}"
   fi
 
-  venv::lock "${requirements_file}" "${lock_file}"
+  venv::lock "${lock_file}"
   return "$?"  # Return exit status from venv::lock command
 }
 

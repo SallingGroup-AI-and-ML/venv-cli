@@ -1,92 +1,56 @@
+from tests.helpers import collect_requirements
+from tests.types import RawFilesDict, RequirementsBase
+
+
 class CasesVenvInstallRequirementstxt:
-    def case_pypi(self):
-        requirements = [
+    @collect_requirements
+    def case_pypi(self) -> tuple[RawFilesDict, RequirementsBase]:
+        requirements_txt = [
             "python-json-logger==2.0.7",
         ]
 
-        return {"requirements.txt": "\n".join(requirements)}
+        files = {"requirements.txt": requirements_txt}
+        return files, RequirementsBase.requirements
 
-    def case_git(self):
-        requirements = [
+    @collect_requirements
+    def case_git(self) -> tuple[RawFilesDict, RequirementsBase]:
+        requirements_txt = [
             "python-json-logger @ git+https://github.com/madzak/python-json-logger@v2.0.7",
         ]
 
-        return {"requirements.txt": "\n".join(requirements)}
+        files = {"requirements.txt": requirements_txt}
+        return files, RequirementsBase.requirements
 
-    def case_git_token(self, create_test_credentials: None):
-        requirements = ["python-json-logger @ git+https://${TEST_TOKEN}@github.com/madzak/python-json-logger@v2.0.7"]
-
-        return {"requirements.txt": "\n".join(requirements)}
-
-    def case_git_user_pass(self, create_test_credentials: None):
-        requirements = [
-            "python-json-logger @ git+https://${TEST_USER}:${TEST_PASS}@github.com/madzak/python-json-logger@v2.0.7"
-        ]
-
-        return {"requirements.txt": "\n".join(requirements)}
-
-
-class CasesVenvInstallDevRequirementstxt:
-    def case_pypi_dev(self):
-        requirements = [
+    @collect_requirements
+    def case_pypi_dev(self) -> tuple[RawFilesDict, RequirementsBase]:
+        requirements_txt = [
             "python-json-logger==2.0.7",
         ]
 
-        dev_requirements = [
+        dev_requirements_txt = [
             "-r requirements.txt",
             "numpy==1.26.0",
         ]
 
         files = {
-            "requirements.txt": "\n".join(requirements),
-            "dev-requirements.txt": "\n".join(dev_requirements),
+            "requirements.txt": requirements_txt,
+            "dev-requirements.txt": dev_requirements_txt,
         }
-        return files
+        return files, RequirementsBase.dev_requirements
 
-    def case_git_dev(self):
-        requirements = [
+    @collect_requirements
+    def case_git_dev(self) -> tuple[RawFilesDict, RequirementsBase]:
+        requirements_txt = [
             "python-json-logger @ git+https://github.com/madzak/python-json-logger@v2.0.7",
         ]
 
-        dev_requirements = [
+        dev_requirements_txt = [
             "-r requirements.txt",
             "numpy==1.26.0",
         ]
 
         files = {
-            "requirements.txt": "\n".join(requirements),
-            "dev-requirements.txt": "\n".join(dev_requirements),
+            "requirements.txt": requirements_txt,
+            "dev-requirements.txt": dev_requirements_txt,
         }
-        return files
-
-    def case_git_token_dev(self, create_test_credentials: None):
-        requirements = [
-            "python-json-logger @ git+https://${TEST_TOKEN}@github.com/madzak/python-json-logger@v2.0.7",
-        ]
-
-        dev_requirements = [
-            "-r requirements.txt",
-            "numpy==1.26.0",
-        ]
-
-        files = {
-            "requirements.txt": "\n".join(requirements),
-            "dev-requirements.txt": "\n".join(dev_requirements),
-        }
-        return files
-
-    def case_git_user_pass_dev(self, create_test_credentials: None):
-        requirements = [
-            "python-json-logger @ git+https://${TEST_USER}:${TEST_PASS}@github.com/madzak/python-json-logger@v2.0.7",
-        ]
-
-        dev_requirements = [
-            "-r requirements.txt",
-            "numpy==1.26.0",
-        ]
-
-        files = {
-            "requirements.txt": "\n".join(requirements),
-            "dev-requirements.txt": "\n".join(dev_requirements),
-        }
-        return files
+        return files, RequirementsBase.dev_requirements

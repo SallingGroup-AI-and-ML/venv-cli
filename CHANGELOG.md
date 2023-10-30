@@ -1,6 +1,9 @@
 # Changelog
 
-## [Unreleased](https://github.com/SallingGroup-AI-and-ML/venv-cli/tree/develop)
+## [v2.0.0](https://github.com/SallingGroup-AI-and-ML/venv-cli/tree/release/2.0)
+
+### Major changes
+* `venv sync` has been removed. Use `venv install <requirements>.lock` instead. [#17](https://github.com/SallingGroup-AI-and-ML/venv-cli/pull/17)
 
 ### Minor changes
 * `venv install` now runs `venv clear` before installation. This ensures that the enrivonment doesn't end up with orphaned packages after making changes to `requirements.txt`. [#9](https://github.com/SallingGroup-AI-and-ML/venv-cli/issues/9)

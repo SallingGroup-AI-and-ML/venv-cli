@@ -9,7 +9,7 @@
 * `venv install` now runs `venv clear` before installation. This ensures that the enrivonment doesn't end up with orphaned packages after making changes to `requirements.txt`. [#9](https://github.com/SallingGroup-AI-and-ML/venv-cli/issues/9)
 
 ## Minor changes
-* `venv sync` command marked as deprecated with removal planned for `v2.0`. Use `venv install <requirments>.lock` instead. [#14](https://github.com/SallingGroup-AI-and-ML/venv-cli/pull/14)
+* `venv sync` command marked as deprecated with removal planned for `v2.0`. Use `venv install <requirements>.lock` instead. [#14](https://github.com/SallingGroup-AI-and-ML/venv-cli/pull/14)
 
 ## [v1.3.0](https://github.com/SallingGroup-AI-and-ML/venv-cli/releases/tag/v1.3.0) (2023-10-30)
 

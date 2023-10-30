@@ -167,8 +167,8 @@ venv::install() {
   if venv::_check_if_help_requested "$1"; then
     echo "venv install [<requirements file>] [--skip-lock] [<install args>]"
     echo
-    echo "Install requirements from <requirements file>, like 'requirements.txt'"
-    echo "or 'requirements.lock'."
+    echo "Clear the environment, then install requirements from <requirements file>,"
+    echo "like 'requirements.txt' or 'requirements.lock'."
     echo "Installed packages are then locked into the corresponding .lock-file,"
     echo "e.g. 'venv install requirements.txt' will lock packages into 'requirements.lock'."
     echo "This step is skipped if '--skip-lock' is specified, or when installing"
@@ -210,6 +210,10 @@ venv::install() {
     skip_lock=true
     shift
   fi
+
+  # Clear the environment before running pip install to avoid orphaned packages
+  # https://github.com/SallingGroup-AI-and-ML/venv-cli/issues/9
+  venv::clear
 
   venv::color_echo "${_green}" "Installing requirements from ${requirements_file}"
   if ! pip install --require-virtualenv --use-pep517 -r "${requirements_file}" "$@"; then

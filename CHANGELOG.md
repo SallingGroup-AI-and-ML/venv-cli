@@ -2,6 +2,8 @@
 
 ## [Unreleased](https://github.com/SallingGroup-AI-and-ML/venv-cli/tree/develop)
 
+## [v1.4.1](https://github.com/SallingGroup-AI-and-ML/venv-cli/releases/tag/v1.4.1) (2023-10-30)
+
 ### Bugfixes
 * Fixed `venv lock` failing to lock when called as part of `venv install`. [#21](https://github.com/SallingGroup-AI-and-ML/venv-cli/pull/21)
 

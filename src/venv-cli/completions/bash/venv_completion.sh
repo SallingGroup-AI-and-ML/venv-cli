@@ -5,7 +5,7 @@ _venv() {
     cur_word="${COMP_WORDS[COMP_CWORD]}"
     prev_word="${COMP_WORDS[COMP_CWORD-1]}"
 
-    _subcommands="activate clear create deactivate install lock sync"
+    _subcommands="activate clear create deactivate install lock"
     subcommands=( $(compgen -W "${_subcommands}" -- "${cur_word}") )
     help_options=( $(compgen -W "-h --help" -- "${cur_word}") )
 
@@ -48,12 +48,6 @@ _venv() {
         "lock")
             # Generate completions for lock file paths
             COMPREPLY+=( $(compgen -f -X '!(*.lock)' -- "${cur_word}" | sort) )
-            COMPREPLY+=( ${help_options[*]} )
-            compopt -o plusdirs +o nosort  # Add directories after generated completions
-            ;;
-        "sync")
-            # Generate completions for lock file paths
-            COMPREPLY+=( $(compgen -f -X '!*.lock' -- "${cur_word}" | sort) )
             COMPREPLY+=( ${help_options[*]} )
             compopt -o plusdirs +o nosort  # Add directories after generated completions
             ;;

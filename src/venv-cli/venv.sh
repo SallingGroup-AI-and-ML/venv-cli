@@ -302,52 +302,6 @@ venv::clear() {
 }
 
 
-venv::sync() {
-  if venv::_check_if_help_requested "$1"; then
-    echo "venv sync [<lock file>]"
-    echo ""
-    echo "DEPRECATED: This command is deprecated and will be removed in version 2.0."
-    echo "Use 'venv install <requirements.lock>' instead."
-    echo ""
-    echo "Remove all installed packages from the environment (venv clear)"
-    echo "and install all packages specified in <lock file>."
-    echo "The <lock file> must be in the form '*requirements.lock'."
-    echo
-    echo "If no <lock file> is specified, defaults to 'requirements.lock'."
-    echo
-    echo "Examples:"
-    echo "$ venv sync dev-requirements.lock"
-    echo "Clears the environment and installs requirements from 'dev-requirements.lock'."
-    echo
-    echo "$ venv sync"
-    echo "Tries to install from 'requirements.lock'."
-    echo "Clears the environment and installs requirements from 'requirements.lock'."
-    return "${_success}"
-  fi
-
-  venv::color_echo "${_yellow}" "DEPRECATED: This command is deprecated and will be removed in version 2.0. Use 'venv install <requirements.lock>' instead."
-
-  local lock_file
-  if [ -z "$1" ]; then
-    # If no argument passed
-    lock_file="requirements.lock"
-
-  # If full lock file passed
-  else
-    if ! venv::_check_lock_requirements_file "$1" "Can only sync using .lock file"; then
-      return "${_fail}"
-    fi
-
-    lock_file="$1"
-    shift
-  fi
-
-  venv::clear
-  venv::install "${lock_file}" "$@"
-  return "$?"  # Return exit status from venv::install command
-}
-
-
 venv::help() {
   echo "Utility to help create and manage python virtual environments."
   echo "Lightweight wrapper around pip and venv."
@@ -361,8 +315,6 @@ venv::help() {
   echo "install        Install requirements from a requirements file in the current environment"
   echo "lock           Lock installed requirements in a '.lock'-file"
   echo "clear          Remove all installed packages in the current environment"
-  echo "sync           Run 'venv clear', then install locked requirements from a"
-  echo "               '.lock'-file in the current environment"
   echo "deactivate     Deactivate the currently activated virtual environment"
   echo "-h, --help     Show this help and exit"
   echo "-v, --version  Show the venv-cli version number and exit"
@@ -388,7 +340,6 @@ venv::main() {
     | install \
     | lock \
     | clear \
-    | sync \
     | deactivate \
     )
       shift

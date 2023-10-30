@@ -1,5 +1,19 @@
 # Changelog
 
+## [Unreleased](https://github.com/SallingGroup-AI-and-ML/venv-cli/tree/develop)
+
+## [v1.3.0](https://github.com/SallingGroup-AI-and-ML/venv-cli/releases/tag/v1.3.0) (2023-10-30)
+
+## Major changes
+* `venv lock` no longer tries to fill in credentials for packages installed via VCS. This behavior was undocumented and difficult to maintain and ultimately tried to alleviate a shortcoming of the way `pip` handles these credentials. [#11](https://github.com/SallingGroup-AI-and-ML/venv-cli/pull/11)
+For users who have credentials as part of URLs in their `requirements.txt` files, there are other ways to handle credentials, e.g. filling them in `requirements.lock` manually, using a `.netrc` file to store the credetials or using a keyring. See https://pip.pypa.io/en/stable/topics/authentication/ for more info.
+
+### Minor changes
+* `venv create` now prints the full python version used for creating the environment. [bb62c21](https://github.com/SallingGroup-AI-and-ML/venv-cli/commit/bb62c216cbad2fcec06bfb1cde8b875dbfc237d3)
+
+### Internal changes
+* Added `pytest-cases` to development dependencies.
+
 ## [v1.2.0](https://github.com/SallingGroup-AI-and-ML/venv-cli/releases/tag/v1.2.0) (2023-08-04)
 
 From this release forward, this project follows the `Git Flow` branching model. To reflect this, the default development branch have been renamed `develop`, and the `main` branch is now only for tagged releases.

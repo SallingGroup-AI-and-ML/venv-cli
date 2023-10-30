@@ -6,7 +6,7 @@ import pytest
 from pytest_cases import parametrize_with_cases
 
 from tests.helpers import run_command, write_files
-from tests.test_venv_install_cases import CasesVenvInstallRequirementstxt
+from tests.test_venv_install_cases import CasesVenvInstallRequirementstxt, CasesVenvInstallWithLock
 from tests.types import RequirementsBase, RequirementsDict
 
 _package_name_regex = re.compile(r"^([a-zA-Z0-9_-]+)\b")
@@ -60,3 +60,19 @@ def test_venv_install_requirements(
             continue
 
         _check_package_was_installed(requirement=requirement, installed_line=installed_line)
+
+
+@pytest.mark.order(after="test_venv_activate.py::test_venv_activate")
+@parametrize_with_cases(argnames=["files", "requirements_base"], cases=CasesVenvInstallWithLock)
+def test_venv_install_with_lock(
+    files: RequirementsDict,
+    requirements_base: RequirementsBase,
+    tmp_path: Path,
+):
+    write_files(files=files, dir=tmp_path)
+
+    run_command(
+        f"venv install {requirements_base}.txt",
+        cwd=tmp_path,
+        activated=True,
+    )

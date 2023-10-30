@@ -54,3 +54,14 @@ class CasesVenvInstallRequirementstxt:
             "dev-requirements.txt": dev_requirements_txt,
         }
         return files, RequirementsBase.dev_requirements
+
+
+class CasesVenvInstallWithLock:
+    @collect_requirements
+    def case_pypi(self) -> tuple[RawFilesDict, RequirementsBase]:
+        requirements_txt = [
+            "python-json-logger==2.0.7",
+        ]
+
+        files = {"requirements.txt": requirements_txt}
+        return files, RequirementsBase.requirements

@@ -2,8 +2,11 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from pytest_cases import parametrize, parametrize_with_cases
 
-from tests.helpers import RequirementFiles, run_command
+from tests.helpers import run_command, write_files
+from tests.test_venv_lock_cases import CasesVenvLock
+from tests.types import RequirementsBase, RequirementsDict
 
 
 @pytest.mark.order(
@@ -12,52 +15,42 @@ from tests.helpers import RequirementFiles, run_command
         "test_venv_fill_credentials.py::test_venv_fill_credentials",
     ]
 )
-@pytest.mark.parametrize(
-    # fmt: off
-    [    "install_file",         "lock_arg",              "lock_file"],
-    [
-        ("",                     "",                      "requirements.lock"),
-        ("",                     "requirements.lock",     "requirements.lock"),
-        ("requirements.txt",     "",                      "requirements.lock"),
-        ("requirements.txt",     "requirements.lock",     "requirements.lock"),
-        ("dev-requirements.txt", "dev",                   "dev-requirements.lock"),
-        ("dev-requirements.txt", "dev-requirements.lock", "dev-requirements.lock"),
-    ],
-    # fmt: on
-)
+@parametrize_with_cases(argnames=["files", "requirements_base"], cases=CasesVenvLock)
+@parametrize("use_short_name", [False, True])
 def test_venv_lock(
-    install_file: str,
-    lock_arg: str,
-    lock_file: str,
-    venv_dir: RequirementFiles,
-    create_test_credentials: None,
+    files: RequirementsDict,
+    requirements_base: RequirementsBase,
+    use_short_name: bool,
+    tmp_path: Path,
 ):
     """Checks that we can lock requirements in an environment after installing them"""
-    install_file_path: str | Path = venv_dir.get(install_file, install_file)
+    write_files(files=files, dir=tmp_path)
+
+    lock_file_path = f"{requirements_base}.lock"
+    if use_short_name:
+        lock_file_arg = requirements_base.split("-")[0] if "-" in requirements_base else ""
+    else:
+        lock_file_arg = lock_file_path
 
     run_command(
         commands=[
-            f"venv install {install_file_path}",
-            f"venv lock {lock_arg}",
+            f"venv install {requirements_base}.txt --skip-lock",
+            f"venv lock {lock_file_arg}",
         ],
+        cwd=tmp_path,
         activated=True,
-        cwd=venv_dir["base"],
     )
 
-    lock_file_path = venv_dir[lock_file]
-    contents = lock_file_path.read_text().splitlines()
-    assert all(("==" in line or " @ git+http" in line) for line in contents)
+    lock_file_contents = (tmp_path / lock_file_path).read_text().splitlines()
+    assert lock_file_contents == files[lock_file_path].splitlines()
 
 
-@pytest.mark.parametrize(
+@parametrize(
     "lock_arg",
     [
         "file.lock",
         "requirements.txt",
         "requirements.asd",
-        "requirements.lock requirements.txt",  # Requirements and lock files switched
-        "dev",  # Reference file 'dev-requirements.txt' doesn't exist
-        "dev-requirements.lock",  # Reference file 'dev-requirements.txt' doesn't exist
     ],
 )
 def test_venv_lock_raises(lock_arg: str, tmp_path: Path):
@@ -72,9 +65,9 @@ def test_venv_lock_raises(lock_arg: str, tmp_path: Path):
         "test_venv_fill_credentials.py::test_venv_fill_credentials",
     ]
 )
-def test_venv_lock_echo(venv_dir: RequirementFiles, capfd: pytest.CaptureFixture):
+def test_venv_lock_echo(tmp_path: Path, capfd: pytest.CaptureFixture):
     """Checks that 'venv lock' echoes a message when executed"""
-    run_command("venv lock", activated=True, cwd=venv_dir["base"])
+    run_command("venv lock", activated=True, cwd=tmp_path)
 
     output = capfd.readouterr().out
     assert "Locked requirements in" in output

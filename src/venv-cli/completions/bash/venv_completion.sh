@@ -39,9 +39,15 @@ _venv() {
             COMPREPLY+=( ${python_versions[*]} )
             COMPREPLY+=( ${help_options[*]} )
             ;;
-        "install"|"lock")
+        "install")
             # Generate completions for requirement and lock file paths
             COMPREPLY+=( $(compgen -f -X '!(*.txt|*.lock)' -- "${cur_word}" | sort) )
+            COMPREPLY+=( ${help_options[*]} )
+            compopt -o plusdirs +o nosort  # Add directories after generated completions
+            ;;
+        "lock")
+            # Generate completions for lock file paths
+            COMPREPLY+=( $(compgen -f -X '!(*.lock)' -- "${cur_word}" | sort) )
             COMPREPLY+=( ${help_options[*]} )
             compopt -o plusdirs +o nosort  # Add directories after generated completions
             ;;
@@ -62,12 +68,6 @@ _venv() {
             # Nothing to generate
             ;;
     esac
-
-    # Special case for 'venv lock requirements.txt <TAB>', where only *.lock files should be suggested
-    if [ "${COMP_WORDS[COMP_CWORD-2]}" == "lock" ] && [[ "${prev_word}" =~ ^.*\.txt$ ]]; then
-        COMPREPLY+=( $(compgen -f -X '!*.lock' -- "${cur_word}" | sort) )
-        compopt -o plusdirs +o nosort  # Add directories after generated completions
-    fi
 }
 
 complete -F _venv venv

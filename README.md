@@ -105,7 +105,7 @@ $ venv install requirements.txt
 ```
 are equivalent.
 
-The installed packages are then _locked_ into the corresponding `.lock`-file, e.g. running `venv install dev-requirements.txt` will lock those installed packages into `dev-requirements.lock`.
+The installed packages are then _locked_ into the corresponding `.lock`-file, e.g. running `venv install dev-requirements.txt` will lock those installed packages into `dev-requirements.lock`[^1].
 
 Installing packages this way makes sure that they are tracked, since installing them with `pip install` will keep no record of which packages have been installed in the environment, making it difficult to reproduce later on.
 
@@ -126,7 +126,7 @@ matplotlib
 The `-r requirements.txt` will make sure that installing development requirements also install production requirements.
 
 ## Reproducing environment
-To install a reproducible environment, you need to install from a `.lock`-file, since those have all versions of all requirements locked. From a clean environment (no packages installed yet), run
+To install a reproducible environment, you need to install from a `.lock`-file, since those have all versions of all requirements locked[^1]. From a clean environment (no packages installed yet), run
 ```console
 $ venv install requirements.lock
 ```
@@ -185,3 +185,6 @@ Releases are made by creating a branch `release/vX.X.X` from `develop`, where `X
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
+
+[^1]: A current limitation of using `pip freeze` under the hood is that installing packages from a version control system (VCS) URL that requires authentication, e.g. `private_package @ git+https://USERNAME:PASSWORD@github.com/my-user/private-package`, the authentication is not locked (see https://github.com/pypa/pip/issues/12365).
+These credentials can either be inserted manually into the generated `.lock`-file, or the credentials can instead be stored in a `.netrc` file, which `pip install` will then reference when running `pip install`: https://pip.pypa.io/en/stable/topics/authentication/#netrc-support

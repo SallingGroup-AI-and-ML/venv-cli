@@ -9,7 +9,7 @@ _yellow="\033[01;33m"
 _red="\033[31m"
 
 # Version number has to follow pattern "^v\d+\.\d+\.\d+.*$"
-_version="v1.2.0"
+_version="v1.3.0"
 
 # Valid VCS URL environment variable pattern
 # https://peps.python.org/pep-0610/#specification
@@ -107,11 +107,11 @@ venv::create() {
   fi
 
   local python_version="$1"
-  local venv_prompt='.'
   local venv_name
   venv_name="$(basename "${PWD}")"
 
   # Check if a specific name for the "--prompt" was specified
+  local venv_prompt='.'
   if [ -n "$2" ]; then
     venv_prompt="$2"
     venv_name="${venv_prompt}"
@@ -124,7 +124,8 @@ venv::create() {
     return "$?"
   fi
 
-  venv::color_echo "${_green}" "Creating virtual environment '${venv_name}' using python${python_version}"
+  local full_python_version="$(${python_executable} -V)"
+  venv::color_echo "${_green}" "Creating virtual environment '${venv_name}' using ${full_python_version}"
   ${python_executable} -m venv .venv --prompt "${venv_prompt}"
 }
 
@@ -226,105 +227,41 @@ venv::install() {
 }
 
 
-venv::_fill_credentials() {
-  ### Read VCS URL auth from requirements file and fill in lock file URLs
-  local requirements_file="$1"
-  local lock_file="$2"
-
-  # Loop over every line in requirements file
-  while IFS= read -r req_line; do
-    # Extract package name from requirement
-    local package=$(echo "${req_line}" | command awk '{print $1}')
-    # Extract VCS URL from requirement
-    local url_req=$(echo "${req_line}" | command awk '{print $3}')
-
-    # Extract environment variable(s) from the URL
-    local env_vars=$(echo "${url_req}" | command grep -oE "${_env_var_auth_pattern}")
-    if [ -z "${env_vars}" ]; then
-      # No env vars in the url (or no url at all), skip line
-      continue
-    fi
-
-    # Use sed to fill in $env_vars after "https://"-section, so a line like
-    # 'asdf-lib @ git+https://github.com/someuser/asdf-lib@commithash'
-    # becomes e.g.
-    # 'asdf-lib @ git+https://${AUTH_TOKEN}@github.com/someuser/asdf-lib@commithash'
-    # or
-    # 'asdf-lib @ git+https://${USERNAME}:${PASSWORD}@github.com/someuser/asdf-lib@commithash'
-    local before_auth_pattern="^(${package} @ [a-zA-Z+]*?https?://)"
-    local after_auth_pattern="(.*?)$"
-    local fill_pattern="\1${env_vars}@\2"
-    command sed -i -E "s|${before_auth_pattern}${after_auth_pattern}|${fill_pattern}|" "${lock_file}"
-
-  done < "${requirements_file}"
-}
-
-
 venv::lock() {
   if venv::_check_if_help_requested "$1"; then
     echo "venv lock [<lock file>|<lock file prefix>]"
-    echo "venv lock <requirements file> <lock file>"
     echo
     echo "Lock all installed package versions and write them to <lock file>."
     echo "The <lock file> must be in the form '*requirements.lock'."
     echo
     echo "If <lock file prefix> is specified instead, locks the requirements to"
-    echo "a file called '<lock file prefix>-requirements.lock'."
+    echo "a file called '<lock file prefix>-requirements.lock', e.g."
+    echo "'venv lock dev' locks requirements to 'dev-requirements.lock'."
     echo
     echo "If no <lock file> is specified, defaults to 'requirements.lock'."
     echo
-    echo "This function uses 'pip freeze' to lock the requirements, but since"
-    echo "'pip freeze' does not include the auth-part of VCS URLs, this command"
-    echo "needs a reference 'requirements.txt'-file to extract the credentials from."
-    echo
-    echo "In the first form, where only <lock file> is specified, this command"
-    echo "looks for a reference <requirements file> with the same stem as <lock file>,"
-    echo "and with a '.txt' extension, e.g. 'venv lock dev-requirements.lock' will look"
-    echo "for a reference file 'dev-requirements.txt'."
-    echo
-    echo "In the second form, both the reference <requirements file> and the <lock file>"
-    echo "are specified."
-    echo
     echo "Examples:"
     echo "$ venv lock"
-    echo "This will lock requirements into 'requirements.lock',"
-    echo "referencing 'requirements.txt'."
+    echo "This will lock requirements into 'requirements.lock'."
     echo
     echo "$ venv lock dev-requirements.lock"
-    echo "This will lock requirements into 'dev-requirements.lock',"
-    echo "referencing 'dev-requirements.txt'."
+    echo "This will lock requirements into 'dev-requirements.lock'."
     echo
-    echo "$ venv lock dev"
-    echo "This will lock requirements into 'dev-requirements.lock',"
-    echo "referencing 'dev-requirements.txt'."
+    echo "$ venv lock ci"
+    echo "This will lock requirements into 'ci-requirements.lock'."
     return "${_success}"
   fi
 
-  local requirements_file
   local lock_file
   if [ -z "$1" ]; then
-    # If nothing was passed, default to "requirements.lock" with "requirements.txt"
-    # as reference
+    # If nothing was passed, default to "requirements.lock"
     lock_file="requirements.lock"
-    requirements_file="requirements.txt"
 
   elif [[ "$1" = *"."* ]]; then
     # If first argument looks like a file name ...
-
     if venv::_check_lock_requirements_file "$1" -q; then
-      # In this case, the first argument is a lock file
+      # ... and is a lock file
       lock_file="$1"
-      requirements_file="$(venv::_get_requirements_from_lock "$1")"
-      shift
-
-    elif $(venv::_check_install_requirements_file "$1" -q \
-        && venv::_check_lock_requirements_file "$2" -q); then
-      # In this case, the first argument is a requirements file and the second
-      # argument is a lock file
-      requirements_file="$1"
-      lock_file="$2"
-      shift 2
-
     else
       venv::raise "Input file(s) had wrong format. See 'venv lock --help' for more info."
       return "$?"
@@ -333,22 +270,10 @@ venv::lock() {
   else
     # If first argument is not a full filename, assume it is a lock file prefix
     lock_file="$1-requirements.lock"
-    requirements_file="$1-requirements.txt"
-  fi
-
-  if [ ! -f "${requirements_file}" ]; then
-    venv::raise "No reference requirements file found with name '${requirements_file}', aborting."
-    return "$?"
   fi
 
   # Write locked requirements into lock file
   pip freeze --require-virtualenv > "${lock_file}"
-
-  # Since 'pip freeze' does not include the auth-part of VCS URLs, we have to
-  # get those from the reference requirements file
-  if ! venv::_fill_credentials "${requirements_file}" "${lock_file}"; then
-    return "${_fail}"
-  fi
 
   venv::color_echo "${_green}" "Locked requirements in ${lock_file}"
 }

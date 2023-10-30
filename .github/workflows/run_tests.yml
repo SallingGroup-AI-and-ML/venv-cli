@@ -5,8 +5,9 @@ name: Linting and tests
 
 on:
   push:
-    branches: [ "main", "release/*" ]
+    branches: [ "main" ]
   pull_request:
+    branches: [ "main", "release/**", "develop" ]
 
 permissions:
   contents: read

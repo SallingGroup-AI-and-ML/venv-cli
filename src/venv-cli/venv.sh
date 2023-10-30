@@ -9,7 +9,7 @@ _yellow="\033[01;33m"
 _red="\033[31m"
 
 # Version number has to follow pattern "^v\d+\.\d+\.\d+.*$"
-_version="v1.3.0"
+_version="v1.4.0"
 
 # Valid VCS URL environment variable pattern
 # https://peps.python.org/pep-0610/#specification

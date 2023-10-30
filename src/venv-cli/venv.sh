@@ -305,7 +305,10 @@ venv::clear() {
 venv::sync() {
   if venv::_check_if_help_requested "$1"; then
     echo "venv sync [<lock file>]"
-    echo
+    echo ""
+    echo "DEPRECATED: This command is deprecated and will be removed in version 2.0."
+    echo "Use 'venv install <requirements.lock>' instead."
+    echo ""
     echo "Remove all installed packages from the environment (venv clear)"
     echo "and install all packages specified in <lock file>."
     echo "The <lock file> must be in the form '*requirements.lock'."
@@ -321,6 +324,8 @@ venv::sync() {
     echo "Clears the environment and installs requirements from 'requirements.lock'."
     return "${_success}"
   fi
+
+  venv::color_echo "${_yellow}" "DEPRECATED: This command is deprecated and will be removed in version 2.0. Use 'venv install <requirements.lock>' instead."
 
   local lock_file
   if [ -z "$1" ]; then

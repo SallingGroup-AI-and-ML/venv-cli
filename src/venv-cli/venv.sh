@@ -9,7 +9,7 @@ _yellow="\033[01;33m"
 _red="\033[31m"
 
 # Version number has to follow pattern "^v\d+\.\d+\.\d+.*$"
-_version="v1.3.0"
+_version="v1.4.0"
 
 # Valid VCS URL environment variable pattern
 # https://peps.python.org/pep-0610/#specification
@@ -167,8 +167,8 @@ venv::install() {
   if venv::_check_if_help_requested "$1"; then
     echo "venv install [<requirements file>] [--skip-lock] [<install args>]"
     echo
-    echo "Install requirements from <requirements file>, like 'requirements.txt'"
-    echo "or 'requirements.lock'."
+    echo "Clear the environment, then install requirements from <requirements file>,"
+    echo "like 'requirements.txt' or 'requirements.lock'."
     echo "Installed packages are then locked into the corresponding .lock-file,"
     echo "e.g. 'venv install requirements.txt' will lock packages into 'requirements.lock'."
     echo "This step is skipped if '--skip-lock' is specified, or when installing"
@@ -210,6 +210,10 @@ venv::install() {
     skip_lock=true
     shift
   fi
+
+  # Clear the environment before running pip install to avoid orphaned packages
+  # https://github.com/SallingGroup-AI-and-ML/venv-cli/issues/9
+  venv::clear
 
   venv::color_echo "${_green}" "Installing requirements from ${requirements_file}"
   if ! pip install --require-virtualenv --use-pep517 -r "${requirements_file}" "$@"; then
@@ -301,7 +305,10 @@ venv::clear() {
 venv::sync() {
   if venv::_check_if_help_requested "$1"; then
     echo "venv sync [<lock file>]"
-    echo
+    echo ""
+    echo "DEPRECATED: This command is deprecated and will be removed in version 2.0."
+    echo "Use 'venv install <requirements.lock>' instead."
+    echo ""
     echo "Remove all installed packages from the environment (venv clear)"
     echo "and install all packages specified in <lock file>."
     echo "The <lock file> must be in the form '*requirements.lock'."
@@ -317,6 +324,8 @@ venv::sync() {
     echo "Clears the environment and installs requirements from 'requirements.lock'."
     return "${_success}"
   fi
+
+  venv::color_echo "${_yellow}" "DEPRECATED: This command is deprecated and will be removed in version 2.0. Use 'venv install <requirements.lock>' instead."
 
   local lock_file
   if [ -z "$1" ]; then

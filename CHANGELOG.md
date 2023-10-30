@@ -2,9 +2,15 @@
 
 ## [Unreleased](https://github.com/SallingGroup-AI-and-ML/venv-cli/tree/develop)
 
+## [v1.4.0](https://github.com/SallingGroup-AI-and-ML/venv-cli/releases/tag/v1.4.0) (2023-10-30)
+
+### Minor changes
+* `venv sync` command marked as deprecated with removal planned for `v2.0`. Use `venv install <requirements>.lock` instead. [#14](https://github.com/SallingGroup-AI-and-ML/venv-cli/pull/14)
+* `venv install` now runs `venv clear` before installation. This ensures that the enrivonment doesn't end up with orphaned packages after making changes to `requirements.txt`. [#9](https://github.com/SallingGroup-AI-and-ML/venv-cli/issues/9)
+
 ## [v1.3.0](https://github.com/SallingGroup-AI-and-ML/venv-cli/releases/tag/v1.3.0) (2023-10-30)
 
-## Major changes
+### Major changes
 * `venv lock` no longer tries to fill in credentials for packages installed via VCS. This behavior was undocumented and difficult to maintain and ultimately tried to alleviate a shortcoming of the way `pip` handles these credentials. [#11](https://github.com/SallingGroup-AI-and-ML/venv-cli/pull/11)
 For users who have credentials as part of URLs in their `requirements.txt` files, there are other ways to handle credentials, e.g. filling them in `requirements.lock` manually, using a `.netrc` file to store the credetials or using a keyring. See https://pip.pypa.io/en/stable/topics/authentication/ for more info.
 

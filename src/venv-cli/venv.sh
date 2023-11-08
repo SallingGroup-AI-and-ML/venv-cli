@@ -190,7 +190,7 @@ venv::install() {
   fi
 
   local requirements_file
-  if [ -z "$1" ] || [ "$1" = "--skip-lock" ]; then
+  if [ -z "$1" ] || [ "$1" = "--skip-lock" ] || [ "$1" = "-s" ]; then
     # If no filename was passed
     requirements_file="requirements.txt"
 

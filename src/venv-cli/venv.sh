@@ -182,11 +182,12 @@ venv::delete() {
     return "${_success}"
   fi
 
-  # Prompt the user for confirmation before deleting the virtual environment
-  # If -y is not supplied as input argument, prompt the user in the terminal
+  # If -y is not supplied as input argument, prompt the user for confirmation
   if [ "$1" != "-y" ]; then
     read -r -p "Are you sure you want to delete the virtual environment in .venv? [y/N] " response
-    if ! [[ "${response}" =~ ^([yY][eE][sS]|[yY])$ ]]; then
+
+    local accept_pattern="^([yY][eE][sS]|[yY])$"
+    if [[ ! "${response}" =~ $accept_pattern ]]; then
       venv::color_echo "${_yellow}" "Aborting."
       return "${_success}"
     fi

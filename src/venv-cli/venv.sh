@@ -163,6 +163,48 @@ venv::deactivate() {
 }
 
 
+venv::delete() {
+  if venv::_check_if_help_requested "$1"; then
+    echo "venv delete [-y]"
+    echo
+    echo "Delete the virtual environment located in the current folder."
+    echo "If the environment is currently active, it will be deactivated first."
+    echo
+    echo "Examples:"
+    echo "$ venv delete"
+    echo "Are you sure you want to delete the virtual environment in .venv? [y/N] y"
+    echo "$ Virtual environment deleted!"
+    return "${_success}"
+  fi
+
+  if [ ! -d .venv ]; then
+    venv::color_echo "${_yellow}" "No virtual environment found, nothing to delete."
+    return "${_success}"
+  fi
+
+  # Prompt the user for confirmation before deleting the virtual environment
+  # If -y is not supplied as input argument, prompt the user in the terminal
+  if [ "$1" != "-y" ]; then
+    read -r -p "Are you sure you want to delete the virtual environment in .venv? [y/N] " response
+    if ! [[ "${response}" =~ ^([yY][eE][sS]|[yY])$ ]]; then
+      venv::color_echo "${_yellow}" "Aborting."
+      return "${_success}"
+    fi
+  fi
+
+  venv::color_echo "${_yellow}" "Deleting virtual environment in .venv ..."
+  if [ ! -z "${VIRTUAL_ENV}" ]; then
+    venv::deactivate
+  fi
+
+  if ! rm -rf .venv; then
+    # If the virtual environment could not be deleted
+    return "${_fail}"
+  fi
+  venv::color_echo "${_green}" "Virtual environment deleted!"
+}
+
+
 venv::install() {
   if venv::_check_if_help_requested "$1"; then
     echo "venv install [<requirements file>] [--skip-lock|-s] [<install args>]"
@@ -358,6 +400,7 @@ venv::help() {
   echo
   echo "create         Create a new virtual environment in the current folder"
   echo "activate       Activate the virtual environment in the current folder"
+  echo "delete         Delete the virtual environment in the current folder"
   echo "install        Install requirements from a requirements file in the current environment"
   echo "lock           Lock installed requirements in a '.lock'-file"
   echo "clear          Remove all installed packages in the current environment"
@@ -385,6 +428,7 @@ venv::main() {
 
     create \
     | activate \
+    | delete \
     | install \
     | lock \
     | clear \

@@ -172,7 +172,8 @@ venv::delete() {
     echo
     echo "Examples:"
     echo "$ venv delete"
-    echo "Are you sure you want to delete the virtual environment in .venv? [y/N] y"
+    echo "Are you sure you want to delete the virtual environment in .venv? [y/N]"
+    echo "y"
     echo "$ Virtual environment deleted!"
     return "${_success}"
   fi
@@ -184,7 +185,8 @@ venv::delete() {
 
   # If -y is not supplied as input argument, prompt the user for confirmation
   if [ "$1" != "-y" ]; then
-    read -r -p "Are you sure you want to delete the virtual environment in .venv? [y/N] " response
+    echo "Are you sure you want to delete the virtual environment in .venv? [y/N]"
+    read -r response
 
     local accept_pattern="^([yY][eE][sS]|[yY])$"
     if [[ ! "${response}" =~ $accept_pattern ]]; then

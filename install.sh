@@ -44,16 +44,25 @@ install_zsh() {
 }
 
 main() {
-  if [ -n "${ZSH_VERSION}" ]; then
-    install_zsh
-  elif [ "${SHELL}" = "/bin/bash" ]; then
-    install_bash
-  else
-    echo "Current shell is not supported, aborting..."
-    return 1
-  fi
+  local shell="$1"
+
+  case "${shell}" in
+    "" | "bash")
+      install_bash
+      ;;
+
+    "zsh")
+      install_zsh
+      ;;
+
+    *)
+      echo "No install script available for '${shell}'."
+      echo "Use a different shell or install manually by adding 'source venv-cli/0src/venv-cli/venv-cli.sh' to your shell's RC-file"
+      return 1
+      ;;
+  esac
 
   echo "venv installed"
 }
 
-main
+main "$@"

@@ -3,7 +3,7 @@ import subprocess
 import sys
 from functools import wraps
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Optional
 
 from tests.types import P, RawFilesDict, RequirementsBase, RequirementsDict
 
@@ -27,13 +27,29 @@ def _command_setup(venv_cli_path: Path, activate: bool = False) -> list[str]:
     return [*bash, full_command]
 
 
-def run_command(commands: str | list[str], cwd: Path = Path.cwd(), activated: bool = False) -> None:
+def run_command(
+    commands: str | list[str],
+    cwd: Path = Path.cwd(),
+    activated: bool = False,
+    command_input: Optional[str] = None,
+) -> None:
+    """Run a command in a subprocess, optionally activating the virtual environment first
+
+    Args:
+        commands: The command(s) to run.
+        cwd: The directory to run the command in. Defaults to the current working directory.
+        activated: Whether to activate the virtual environment before running the command.
+        command_input: The input to pass to the command. Defaults to None.
+
+    Raises:
+        subprocess.CalledProcessError: If the command returns a non-zero exit code.
+    """
     input_commands = [commands] if isinstance(commands, str) else commands
 
     setup_commands = _command_setup(venv_cli_path=_venv_cli_path, activate=activated)
     all_commands = [*setup_commands[:-1], setup_commands[-1] + "; ".join(input_commands)]
 
-    result = subprocess.run(all_commands, cwd=cwd)
+    result = subprocess.run(all_commands, cwd=cwd, input=command_input, text=True)
     result.check_returncode()
 
 

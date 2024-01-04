@@ -5,7 +5,7 @@ _venv() {
     cur_word="${COMP_WORDS[COMP_CWORD]}"
     prev_word="${COMP_WORDS[COMP_CWORD-1]}"
 
-    _subcommands="activate clear create deactivate install lock"
+    _subcommands="activate clear create deactivate delete install lock"
     subcommands=( $(compgen -W "${_subcommands}" -- "${cur_word}") )
     help_options=( $(compgen -W "-h --help" -- "${cur_word}") )
 
@@ -38,6 +38,11 @@ _venv() {
                 ) )
             COMPREPLY+=( ${python_versions[*]} )
             COMPREPLY+=( ${help_options[*]} )
+            ;;
+        "delete")
+            # Generate completion for help_options plus the '-y' option
+            COMPREPLY+=( ${help_options[*]} )
+            COMPREPLY+=( $(compgen -W "-y" -- "${cur_word}") )
             ;;
         "install")
             # Generate completions for requirement and lock file paths

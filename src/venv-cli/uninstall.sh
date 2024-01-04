@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 _venv_dir="/usr/local/share/venv"
 
 set -e

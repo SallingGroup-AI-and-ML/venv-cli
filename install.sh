@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 _src_dir="${PWD}/src/venv-cli"
 _install_dir="/usr/local/share/venv"
 

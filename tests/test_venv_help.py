@@ -26,7 +26,6 @@ def test_venv_help(arg: str, tmp_path: Path, capfd: pytest.CaptureFixture):
         "install",
         "lock",
         "clear",
-        "sync",
     ],
 )
 @pytest.mark.parametrize("help_arg", ["-h", "--help"])

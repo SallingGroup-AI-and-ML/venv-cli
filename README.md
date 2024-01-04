@@ -126,19 +126,12 @@ matplotlib
 The `-r requirements.txt` will make sure that installing development requirements also install production requirements.
 
 ## Reproducing environment
-To install a reproducible environment, you need to install from a `.lock`-file, since those have all versions of all requirements locked[^1]. From a clean environment (no packages installed yet), run
+To install a reproducible environment, you need to install from a `.lock`-file, since those have all versions of all requirements locked[^1]:
 ```console
 $ venv install requirements.lock
 ```
 
-If you don't have a clean environment, but still want to recreate the environment as it was when the requirements were locked, you can run
-```console
-$ venv sync requirements.lock
-```
-
-This will first remove all installed packages, then run `venv install requirements.lock`.
-
-**NOTE: Since this command is meant to create a reproducable environment, you cannot `sync` to a `.txt` file; it has to be a `.lock` file.**
+This will first clear the environment of any installed packages, then install the packages and versions specified in `requirements.lock`.
 
 ## Clearing the environment
 If you want to manually clear the environment, you can run

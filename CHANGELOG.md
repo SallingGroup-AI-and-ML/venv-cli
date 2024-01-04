@@ -1,5 +1,10 @@
 # Changelog
 
+## [v2.0.0](https://github.com/SallingGroup-AI-and-ML/venv-cli/releases/tag/v2.0.0)
+
+### Major changes
+* `venv sync` has been removed. Use `venv install <requirements>.lock` instead. [#17](https://github.com/SallingGroup-AI-and-ML/venv-cli/pull/17)
+
 ## [v1.5.0](https://github.com/SallingGroup-AI-and-ML/venv-cli/releases/tag/v1.5.0) (2024-01-04)
 
 ### Major changes

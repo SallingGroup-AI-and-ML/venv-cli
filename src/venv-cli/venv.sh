@@ -9,7 +9,7 @@ _yellow="\033[01;33m"
 _red="\033[31m"
 
 # Version number has to follow pattern "^v\d+\.\d+\.\d+.*$"
-_version="v1.4.1"
+_version="v1.5.0"
 
 # Valid VCS URL environment variable pattern
 # https://peps.python.org/pep-0610/#specification
@@ -163,15 +163,60 @@ venv::deactivate() {
 }
 
 
+venv::delete() {
+  if venv::_check_if_help_requested "$1"; then
+    echo "venv delete [-y]"
+    echo
+    echo "Delete the virtual environment located in the current folder."
+    echo "If the environment is currently active, it will be deactivated first."
+    echo
+    echo "Examples:"
+    echo "$ venv delete"
+    echo "Are you sure you want to delete the virtual environment in .venv? [y/N]"
+    echo "y"
+    echo "$ Virtual environment deleted!"
+    return "${_success}"
+  fi
+
+  if [ ! -d .venv ]; then
+    venv::color_echo "${_yellow}" "No virtual environment found, nothing to delete."
+    return "${_success}"
+  fi
+
+  # If -y is not supplied as input argument, prompt the user for confirmation
+  if [ "$1" != "-y" ]; then
+    echo "Are you sure you want to delete the virtual environment in .venv? [y/N]"
+    read -r response
+
+    local accept_pattern="^([yY][eE][sS]|[yY])$"
+    if [[ ! "${response}" =~ $accept_pattern ]]; then
+      venv::color_echo "${_yellow}" "Aborting."
+      return "${_success}"
+    fi
+  fi
+
+  venv::color_echo "${_yellow}" "Deleting virtual environment in .venv ..."
+  if [ ! -z "${VIRTUAL_ENV}" ]; then
+    venv::deactivate
+  fi
+
+  if ! rm -rf .venv; then
+    # If the virtual environment could not be deleted
+    return "${_fail}"
+  fi
+  venv::color_echo "${_green}" "Virtual environment deleted!"
+}
+
+
 venv::install() {
   if venv::_check_if_help_requested "$1"; then
-    echo "venv install [<requirements file>] [--skip-lock] [<install args>]"
+    echo "venv install [<requirements file>] [--skip-lock|-s] [<install args>]"
     echo
     echo "Clear the environment, then install requirements from <requirements file>,"
     echo "like 'requirements.txt' or 'requirements.lock'."
     echo "Installed packages are then locked into the corresponding .lock-file,"
     echo "e.g. 'venv install requirements.txt' will lock packages into 'requirements.lock'."
-    echo "This step is skipped if '--skip-lock' is specified, or when installing"
+    echo "This step is skipped if '--skip-lock' or '-s' is specified, or when installing"
     echo "directly from a .lock-file."
     echo
     echo "The <requirements file> must be in the form '*requirements.[txt|lock]'."
@@ -185,12 +230,12 @@ venv::install() {
     echo
     echo "$ venv install dev-requirements.txt"
     echo
-    echo "$ venv install requirements.txt --skip-lock --no-cache"
+    echo "$ venv install requirements.txt --skip-lock|-s --no-cache"
     return "${_success}"
   fi
 
   local requirements_file
-  if [ -z "$1" ] || [ "$1" = "--skip-lock" ]; then
+  if [ -z "$1" ] || [ "$1" = "--skip-lock" ] || [ "$1" = "-s" ]; then
     # If no filename was passed
     requirements_file="requirements.txt"
 
@@ -206,7 +251,7 @@ venv::install() {
   fi
 
   local skip_lock=false
-  if [ "$1" = "--skip-lock" ]; then
+  if [ "$1" = "--skip-lock" ] || [ "$1" = "-s" ]; then
     skip_lock=true
     shift
   fi
@@ -358,6 +403,7 @@ venv::help() {
   echo
   echo "create         Create a new virtual environment in the current folder"
   echo "activate       Activate the virtual environment in the current folder"
+  echo "delete         Delete the virtual environment in the current folder"
   echo "install        Install requirements from a requirements file in the current environment"
   echo "lock           Lock installed requirements in a '.lock'-file"
   echo "clear          Remove all installed packages in the current environment"
@@ -385,6 +431,7 @@ venv::main() {
 
     create \
     | activate \
+    | delete \
     | install \
     | lock \
     | clear \

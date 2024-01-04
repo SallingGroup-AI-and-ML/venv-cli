@@ -5,6 +5,19 @@
 ### Major changes
 * `venv sync` has been removed. Use `venv install <requirements>.lock` instead. [#17](https://github.com/SallingGroup-AI-and-ML/venv-cli/pull/17)
 
+## [v1.5.0](https://github.com/SallingGroup-AI-and-ML/venv-cli/releases/tag/v1.5.0) (2024-01-04)
+
+### Major changes
+* Added `venv delete` command. [#25](https://github.com/SallingGroup-AI-and-ML/venv-cli/pull/25)
+
+  Running `venv delete` completely removes the virtual environment located in the current folder.
+
+### Minor changes
+* Added `-s` alias for `--skip-lock` when running `venv install`. [#24](https://github.com/SallingGroup-AI-and-ML/venv-cli/pull/24)
+
+### Internal changes
+* The `run_command` test helper function can now pass through inputs to the command that is being run.
+
 ## [v1.4.1](https://github.com/SallingGroup-AI-and-ML/venv-cli/releases/tag/v1.4.1) (2023-10-30)
 
 ### Bugfixes

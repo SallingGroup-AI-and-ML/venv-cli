@@ -13,8 +13,8 @@ uninstall_common() {
   local completion_target="$2"
 
   # Remove the line from shell config that sources the script
-	sed -i "\|.*Source autocompletions for 'venv' command|d" "${HOME}/.bashrc"
-	sed -i "\|\. ${_venv_dir}/venv|d" "${HOME}/.bashrc"
+	sed -i "\|.*Source autocompletions for 'venv' command|d" "${rcfile}"
+	sed -i "\|\. ${_venv_dir}/venv|d" "${rcfile}"
 
   if [ -f "${completion_target}" ]; then
     sudo rm "${completion_target}"
@@ -33,8 +33,8 @@ uninstall_zsh() {
   local completion_target="/usr/local/share/zsh/site-functions/_venv"
 
   uninstall_common "${rcfile}" "${completion_target}"
-  sed -i "\|fpath+=( ${_install_dir} )|d" "${HOME}/.zshrc"
-  sed -i "\|autoload -Uz venv|d" "${HOME}/.zshrc"
+  sed -i "\|fpath+=( ${_install_dir} )|d" "${rcfile}"
+  sed -i "\|autoload -Uz venv|d" "${rcfile}"
 }
 
 main() {

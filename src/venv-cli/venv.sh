@@ -34,6 +34,14 @@ venv::raise() {
   return "${_fail}"
 }
 
+venv::_check_venv_activated() {
+  if [ -z "${VIRTUAL_ENV}" ]; then
+    venv::raise "No virtual environment activated. Please activate the virtual environment first"
+    return "${_fail}"
+  fi
+  return "${_success}"
+}
+
 venv::_check_if_help_requested() {
   if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
     return "${_success}"

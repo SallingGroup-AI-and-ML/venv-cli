@@ -347,6 +347,10 @@ venv::clear() {
     return "${_success}"
   fi
 
+  if ! venv::_check_venv_activated; then
+    return "${_fail}"
+  fi
+
   venv::color_echo "${_yellow}" "Removing all packages from virtual environment ..."
   pip freeze --require-virtualenv \
     | cut -d "@" -f1 \

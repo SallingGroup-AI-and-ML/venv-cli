@@ -266,7 +266,9 @@ venv::install() {
 
   # Clear the environment before running pip install to avoid orphaned packages
   # https://github.com/SallingGroup-AI-and-ML/venv-cli/issues/9
-  venv::clear
+  if ! venv::clear; then
+    return "${_fail}"
+  fi
 
   venv::color_echo "${_green}" "Installing requirements from ${requirements_file}"
   if ! pip install --require-virtualenv --use-pep517 -r "${requirements_file}" "$@"; then

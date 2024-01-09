@@ -6,11 +6,10 @@ import pytest
 from tests.helpers import run_command
 
 
-@pytest.mark.order(after="test_venv_deactivate.py::test_venv_deactivate")
 def test_check_venv_activated_no_env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
     with pytest.raises(subprocess.CalledProcessError), monkeypatch.context() as m:
         m.delenv("VIRTUAL_ENV", raising=False)
-        run_command(["venv deactivate", "venv::_check_venv_activated"], cwd=tmp_path, activated=False)
+        run_command(["venv::_check_venv_activated"], cwd=tmp_path, activated=False)
 
 
 @pytest.mark.order(after="test_venv_activate.py::test_venv_activate")

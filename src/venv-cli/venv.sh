@@ -352,8 +352,11 @@ venv::clear() {
   fi
 
   venv::color_echo "${_yellow}" "Removing all packages from virtual environment ..."
-  pip freeze --require-virtualenv \
-    | cut -d "@" -f1 \
+  pip list --format freeze \
+    --exclude pip \
+    --exclude setuptools \
+    --exclude wheel \
+    | cut -d "=" -f1 \
     | xargs --no-run-if-empty pip uninstall --require-virtualenv -y
   venv::color_echo "${_green}" "All packages removed!"
 }

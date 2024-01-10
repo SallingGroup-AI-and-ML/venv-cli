@@ -34,6 +34,14 @@ venv::raise() {
   return "${_fail}"
 }
 
+venv::_check_venv_activated() {
+  if [ -z "${VIRTUAL_ENV}" ]; then
+    venv::raise "No virtual environment activated. Please activate the virtual environment first"
+    return "${_fail}"
+  fi
+  return "${_success}"
+}
+
 venv::_check_if_help_requested() {
   if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
     return "${_success}"
@@ -258,7 +266,9 @@ venv::install() {
 
   # Clear the environment before running pip install to avoid orphaned packages
   # https://github.com/SallingGroup-AI-and-ML/venv-cli/issues/9
-  venv::clear
+  if ! venv::clear; then
+    return "${_fail}"
+  fi
 
   venv::color_echo "${_green}" "Installing requirements from ${requirements_file}"
   if ! pip install --require-virtualenv --use-pep517 -r "${requirements_file}" "$@"; then
@@ -339,9 +349,16 @@ venv::clear() {
     return "${_success}"
   fi
 
+  if ! venv::_check_venv_activated; then
+    return "${_fail}"
+  fi
+
   venv::color_echo "${_yellow}" "Removing all packages from virtual environment ..."
-  pip freeze --require-virtualenv \
-    | cut -d "@" -f1 \
+  pip list --format freeze \
+    --exclude pip \
+    --exclude setuptools \
+    --exclude wheel \
+    | cut -d "=" -f1 \
     | xargs --no-run-if-empty pip uninstall --require-virtualenv -y
   venv::color_echo "${_green}" "All packages removed!"
 }

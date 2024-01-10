@@ -1,8 +1,20 @@
 import subprocess
+from pathlib import Path
 
 import pytest
 
 from tests.helpers import run_command
+
+
+def test_check_venv_activated_no_env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
+    with pytest.raises(subprocess.CalledProcessError), monkeypatch.context() as m:
+        m.delenv("VIRTUAL_ENV", raising=False)
+        run_command(["venv::_check_venv_activated"], cwd=tmp_path, activated=False)
+
+
+@pytest.mark.order(after="test_venv_activate.py::test_venv_activate")
+def test_check_venv_activated_yes_env(tmp_path: Path):
+    run_command("venv::_check_venv_activated", cwd=tmp_path, activated=True)
 
 
 @pytest.mark.order("first")

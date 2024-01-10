@@ -8,10 +8,10 @@
 ## [v1.5.1](https://github.com/SallingGroup-AI-and-ML/venv-cli/releases/tag/v1.5.1) (2024-01-10)
 
 ### Minor changes
-* `venv install` now fails early and with a more descriptve error message when run outside of a virtual environment. [#30](https://github.com/SallingGroup-AI-and-ML/venv-cli/pull/30)
+* `venv install` now fails early and with a more descriptve error message when run outside of a virtual environment. [#31](https://github.com/SallingGroup-AI-and-ML/venv-cli/pull/31)
 
 ### Bug fixes
-* `venv clear` is now able to clear virtual environments that contain editable installs. [#30](https://github.com/SallingGroup-AI-and-ML/venv-cli/pull/30)
+* `venv clear` is now able to clear virtual environments that contain editable installs. [#31](https://github.com/SallingGroup-AI-and-ML/venv-cli/pull/31)
 
 ## [v1.5.0](https://github.com/SallingGroup-AI-and-ML/venv-cli/releases/tag/v1.5.0) (2024-01-04)
 

@@ -48,7 +48,7 @@ def test_venv_lock(
 @parametrize(
     "lock_arg",
     [
-        "file.lock",
+        "file.txt",
         "requirements.txt",
         "requirements.asd",
     ],

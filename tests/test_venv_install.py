@@ -1,4 +1,5 @@
 import re
+import subprocess
 from itertools import chain
 from pathlib import Path
 
@@ -20,6 +21,12 @@ def _check_package_was_installed(requirement: str, installed_line: str) -> None:
 
     package_name = re_match.group()
     assert package_name in installed_line, f"Package {package_name} was not installed succesfully"
+
+
+def test_venv_install_not_activated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    with pytest.raises(subprocess.CalledProcessError), monkeypatch.context() as m:
+        m.delenv("VIRTUAL_ENV", raising=False)
+        run_command(["venv install"], cwd=tmp_path, activated=False)
 
 
 @pytest.mark.order(after="test_venv_activate.py::test_venv_activate")

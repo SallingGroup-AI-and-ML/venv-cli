@@ -21,6 +21,10 @@ def test_check_venv_activated_yes_env(tmp_path: Path):
 @pytest.mark.parametrize(
     ["filename", "expected"],
     [
+        ("dev.txt", True),
+        ("dev.lock", True),
+        ("file.txt", True),
+        ("file.lock", True),
         ("requirements.txt", True),
         ("requirements.lock", True),
         ("dev-requirements.txt", True),
@@ -34,8 +38,6 @@ def test_check_venv_activated_yes_env(tmp_path: Path):
         (".txt", False),
         (".lock", False),
         ("asdf", False),
-        ("asdf.txt", False),
-        ("asdf.lock", False),
         ("requirements", False),
         ("dev-requirements", False),
         ("requirements.asdf", False),
@@ -74,6 +76,8 @@ def test_venv_check_install_requirements_file_quiet(capfd: pytest.CaptureFixture
 @pytest.mark.parametrize(
     ["filename", "expected_success"],
     [
+        ("dev.lock", True),
+        ("file.lock", True),
         ("requirements.lock", True),
         ("dev-requirements.lock", True),
         ("prod-requirements.lock", True),
@@ -84,7 +88,6 @@ def test_venv_check_install_requirements_file_quiet(capfd: pytest.CaptureFixture
         (".lock", False),
         ("asdf", False),
         ("asdf.txt", False),
-        ("asdf.lock", False),
         ("requirements", False),
         ("dev-requirements", False),
         ("requirements.txt", False),

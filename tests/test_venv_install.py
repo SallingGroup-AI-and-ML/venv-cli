@@ -43,7 +43,7 @@ def test_venv_install_requirements(
 
     # Install the requirements
     if not (requirements_stem is RequirementsStem.requirements or use_file_name):
-        pytest.skip(f"Empty file name case only valid for requirements.txt, not {requirements_stem}")
+        pytest.skip(f"Empty file name case only valid for requirements.txt, not {requirements_stem.value}.txt")
 
     install_file_name = ""
     if use_file_name:

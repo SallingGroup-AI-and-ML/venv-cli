@@ -5,7 +5,7 @@ from functools import wraps
 from pathlib import Path
 from typing import Callable, Optional
 
-from tests.types import P, RawFilesDict, RequirementsBase, RequirementsDict
+from tests.types import P, RawFilesDict, RequirementsDict, RequirementsStem
 
 RequirementFiles = dict[str, Path]
 current_python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
@@ -54,13 +54,13 @@ def run_command(
 
 
 def collect_requirements(
-    func: Callable[P, tuple[RawFilesDict, RequirementsBase]]
-) -> Callable[P, tuple[RequirementsDict, RequirementsBase]]:
+    func: Callable[P, tuple[RawFilesDict, RequirementsStem]]
+) -> Callable[P, tuple[RequirementsDict, RequirementsStem]]:
     @wraps(func)
-    def wrapper(*args: P.args, **kwargs: P.kwargs) -> tuple[RequirementsDict, RequirementsBase]:
-        files_dict, requirements_base = func(*args, **kwargs)
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> tuple[RequirementsDict, RequirementsStem]:
+        files_dict, requirements_stem = func(*args, **kwargs)
         requirements_dict = {filename: "\n".join(requirements) for filename, requirements in files_dict.items()}
-        return requirements_dict, requirements_base
+        return requirements_dict, requirements_stem
 
     return wrapper
 

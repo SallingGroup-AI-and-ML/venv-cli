@@ -72,7 +72,7 @@ def test_venv_check_install_requirements_file_quiet(capfd: pytest.CaptureFixture
 
 @pytest.mark.order("first")
 @pytest.mark.parametrize(
-    ["filename", "expected"],
+    ["filename", "expected_success"],
     [
         ("requirements.lock", True),
         ("dev-requirements.lock", True),
@@ -95,11 +95,11 @@ def test_venv_check_install_requirements_file_quiet(capfd: pytest.CaptureFixture
         ("dev-requirements.asdf", False),
     ],
 )
-def test_venv_check_lock_requirements_file(filename: str, expected: bool):
+def test_venv_check_lock_requirements_file(filename: str, expected_success: bool):
     """Check that 'venv::_check_lock_requirements_file' works as expected"""
     command = f'venv::_check_lock_requirements_file "{filename}"'
 
-    if expected:
+    if expected_success:
         run_command(command)
     else:
         with pytest.raises(subprocess.CalledProcessError):

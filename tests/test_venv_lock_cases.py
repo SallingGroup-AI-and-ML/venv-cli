@@ -1,10 +1,10 @@
 from tests.helpers import collect_requirements
-from tests.types import RawFilesDict, RequirementsBase
+from tests.types import RawFilesDict, RequirementsStem
 
 
 class CasesVenvLock:
     @collect_requirements
-    def case_requirements(self) -> tuple[RawFilesDict, RequirementsBase]:
+    def case_requirements(self) -> tuple[RawFilesDict, RequirementsStem]:
         requirements_txt = [
             "python-json-logger==2.0.7",
             "resolvelib @ git+https://github.com/sarugaku/resolvelib@1.0.1",
@@ -18,10 +18,10 @@ class CasesVenvLock:
             "requirements.txt": requirements_txt,
             "requirements.lock": requirements_lock,
         }
-        return files, RequirementsBase.requirements
+        return files, RequirementsStem.requirements
 
     @collect_requirements
-    def case_dev_requirements(self) -> tuple[RawFilesDict, RequirementsBase]:
+    def case_dev_requirements(self) -> tuple[RawFilesDict, RequirementsStem]:
         requirements_txt = [
             "python-json-logger==2.0.7",
         ]
@@ -41,4 +41,4 @@ class CasesVenvLock:
             "dev-requirements.txt": dev_requirements_txt,
             "dev-requirements.lock": dev_requirements_lock,
         }
-        return files, RequirementsBase.dev_requirements
+        return files, RequirementsStem.dev_requirements

@@ -8,6 +8,6 @@ RequirementsDict = dict[str, str]
 RequirementFiles = dict[str, Path]
 
 
-class RequirementsBase(str, Enum):
+class RequirementsStem(str, Enum):
     requirements = "requirements"
     dev_requirements = "dev-requirements"

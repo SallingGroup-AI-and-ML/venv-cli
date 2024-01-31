@@ -11,3 +11,4 @@ RequirementFiles = dict[str, Path]
 class RequirementsStem(str, Enum):
     requirements = "requirements"
     dev_requirements = "dev-requirements"
+    all = "all"

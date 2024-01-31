@@ -55,6 +55,35 @@ class CasesVenvInstallRequirementstxt:
         }
         return files, RequirementsStem.dev_requirements
 
+    @collect_requirements
+    def case_pypi_several_nested(self) -> tuple[RawFilesDict, RequirementsStem]:
+        core_txt = [
+            "python-json-logger==2.0.7",
+        ]
+
+        test_txt = [
+            "pytest",
+        ]
+
+        lint_txt = [
+            "black",
+        ]
+
+        all_txt = [
+            "-r core.txt",
+            "-r test.txt",
+            "-r lint.txt",
+            "numpy==1.26.0",
+        ]
+
+        files = {
+            "core.txt": core_txt,
+            "test.txt": test_txt,
+            "lint.txt": lint_txt,
+            "all.txt": all_txt,
+        }
+        return files, RequirementsStem.all
+
 
 class CasesVenvInstallWithLock:
     @collect_requirements

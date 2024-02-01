@@ -21,19 +21,23 @@ def test_check_venv_activated_yes_env(tmp_path: Path):
 @pytest.mark.parametrize(
     ["filename", "expected"],
     [
+        ("dev.txt", True),
+        ("dev.lock", True),
+        ("file.txt", True),
+        ("file.lock", True),
         ("requirements.txt", True),
         ("requirements.lock", True),
         ("dev-requirements.txt", True),
         ("dev-requirements.lock", True),
         ("prod-requirements.txt", True),
         ("prod-requirements.lock", True),
+        ("requirements/prod-requirements.txt", True),
+        ("requirements/prod-requirements.lock", True),
         ("", False),
         (".", False),
         (".txt", False),
         (".lock", False),
         ("asdf", False),
-        ("asdf.txt", False),
-        ("asdf.lock", False),
         ("requirements", False),
         ("dev-requirements", False),
         ("requirements.asdf", False),
@@ -70,18 +74,20 @@ def test_venv_check_install_requirements_file_quiet(capfd: pytest.CaptureFixture
 
 @pytest.mark.order("first")
 @pytest.mark.parametrize(
-    ["filename", "expected"],
+    ["filename", "expected_success"],
     [
+        ("dev.lock", True),
+        ("file.lock", True),
         ("requirements.lock", True),
         ("dev-requirements.lock", True),
         ("prod-requirements.lock", True),
+        ("requirements/prod-requirements.lock", True),
         ("", False),
         (".", False),
         (".txt", False),
         (".lock", False),
         ("asdf", False),
         ("asdf.txt", False),
-        ("asdf.lock", False),
         ("requirements", False),
         ("dev-requirements", False),
         ("requirements.txt", False),
@@ -92,11 +98,11 @@ def test_venv_check_install_requirements_file_quiet(capfd: pytest.CaptureFixture
         ("dev-requirements.asdf", False),
     ],
 )
-def test_venv_check_lock_requirements_file(filename: str, expected: bool):
+def test_venv_check_lock_requirements_file(filename: str, expected_success: bool):
     """Check that 'venv::_check_lock_requirements_file' works as expected"""
     command = f'venv::_check_lock_requirements_file "{filename}"'
 
-    if expected:
+    if expected_success:
         run_command(command)
     else:
         with pytest.raises(subprocess.CalledProcessError):
@@ -124,8 +130,10 @@ def test_venv_check_lock_requirements_file_quiet(capfd: pytest.CaptureFixture):
         ("requirements", "requirements"),
         ("requirements.txt", "requirements.lock"),
         ("dev-requirements.txt", "dev-requirements.lock"),
+        ("requirements/requirements.txt", "requirements/requirements.lock"),
         ("requirements.lock", "requirements.lock"),
         ("dev-requirements.lock", "dev-requirements.lock"),
+        ("requirements/requirements.lock", "requirements/requirements.lock"),
     ],
 )
 def test_venv_get_lock_from_requirements(filename: str, expected: str, capfd: pytest.CaptureFixture):
@@ -141,8 +149,10 @@ def test_venv_get_lock_from_requirements(filename: str, expected: str, capfd: py
         ("requirements", "requirements"),
         ("requirements.lock", "requirements.txt"),
         ("dev-requirements.lock", "dev-requirements.txt"),
+        ("requirements/requirements.lock", "requirements/requirements.txt"),
         ("requirements.txt", "requirements.txt"),
         ("dev-requirements.txt", "dev-requirements.txt"),
+        ("requirements/requirements.txt", "requirements/requirements.txt"),
     ],
 )
 def test_venv_get_requirements_from_lock(filename: str, expected: str, capfd: pytest.CaptureFixture):

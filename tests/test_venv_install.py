@@ -8,7 +8,7 @@ from pytest_cases import parametrize_with_cases
 
 from tests.helpers import run_command, write_files
 from tests.test_venv_install_cases import CasesVenvInstallRequirementstxt, CasesVenvInstallWithLock
-from tests.types import RequirementsBase, RequirementsDict
+from tests.types import RequirementsDict, RequirementsStem
 
 _package_name_regex = re.compile(r"^([a-zA-Z0-9_-]+)\b")
 
@@ -30,11 +30,11 @@ def test_venv_install_not_activated(tmp_path: Path, monkeypatch: pytest.MonkeyPa
 
 
 @pytest.mark.order(after="test_venv_activate.py::test_venv_activate")
-@parametrize_with_cases(argnames=["files", "requirements_base"], cases=CasesVenvInstallRequirementstxt)
+@parametrize_with_cases(argnames=["files", "requirements_stem"], cases=CasesVenvInstallRequirementstxt)
 @pytest.mark.parametrize("use_file_name", [True, False])
 def test_venv_install_requirements(
     files: RequirementsDict,
-    requirements_base: RequirementsBase,
+    requirements_stem: RequirementsStem,
     use_file_name: bool,
     tmp_path: Path,
     capfd: pytest.CaptureFixture,
@@ -42,12 +42,12 @@ def test_venv_install_requirements(
     write_files(files=files, dir=tmp_path)
 
     # Install the requirements
-    if not (requirements_base is RequirementsBase.requirements or use_file_name):
-        pytest.skip(f"Empty file name case only valid for requirements.txt, not {requirements_base}")
+    if not (requirements_stem is RequirementsStem.requirements or use_file_name):
+        pytest.skip(f"Empty file name case only valid for requirements.txt, not {requirements_stem.value}.txt")
 
     install_file_name = ""
     if use_file_name:
-        install_file_name = f"{requirements_base.value}.txt"
+        install_file_name = f"{requirements_stem.value}.txt"
 
     run_command(
         f"venv install {install_file_name} --skip-lock",
@@ -57,7 +57,7 @@ def test_venv_install_requirements(
 
     # Check pip install log output
     output: str = capfd.readouterr().out
-    assert f"Installing requirements from {requirements_base.value}.txt" in output
+    assert f"Installing requirements from {requirements_stem.value}.txt" in output
 
     installed_line = [line for line in output.splitlines() if line.startswith("Successfully installed")][0]
     requirement_lines = chain.from_iterable(contents.splitlines() for contents in files.values())
@@ -70,16 +70,16 @@ def test_venv_install_requirements(
 
 
 @pytest.mark.order(after="test_venv_activate.py::test_venv_activate")
-@parametrize_with_cases(argnames=["files", "requirements_base"], cases=CasesVenvInstallWithLock)
+@parametrize_with_cases(argnames=["files", "requirements_stem"], cases=CasesVenvInstallWithLock)
 def test_venv_install_with_lock(
     files: RequirementsDict,
-    requirements_base: RequirementsBase,
+    requirements_stem: RequirementsStem,
     tmp_path: Path,
 ):
     write_files(files=files, dir=tmp_path)
 
     run_command(
-        f"venv install {requirements_base}.txt",
+        f"venv install {requirements_stem}.txt",
         cwd=tmp_path,
         activated=True,
     )

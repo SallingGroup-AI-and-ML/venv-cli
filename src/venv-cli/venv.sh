@@ -52,11 +52,11 @@ venv::_check_if_help_requested() {
 venv::_check_install_requirements_file() {
   ### Check whether the first argument matches the pattern for a requirements file.
   ### If not, raises error (silently if called with '-q')
-  local file_pattern="^.*?requirements\.(txt|lock)$"
+  local file_pattern="^.+\.(txt|lock)$"
   if [[ ! "$1" =~ $file_pattern ]]; then
     local message=""
     if [ "$2" != "-q" ]; then
-      message="Input file name must have format '*requirements.txt' or '*requirements.lock', was '$1'"
+      message="Input file name must end with '.txt' or '.lock', was '$1'"
     fi
     venv::raise "${message}"
     return "$?"
@@ -66,11 +66,11 @@ venv::_check_install_requirements_file() {
 venv::_check_lock_requirements_file() {
   ### Check whether the first argument matches the pattern for a lock file.
   ### If not, raises error (silently if called with '-q')
-  local file_pattern="^.*?requirements\.lock$"
+  local file_pattern="^.+\.lock$"
   if [[ ! "$1" =~ $file_pattern ]]; then
     local message=""
     if [ "$2" != "-q" ]; then
-      message="Lock file name must have format '*requirements.lock', was '$1'"
+      message="Lock file name must end with '.lock', was '$1'"
     fi
     venv::raise "${message}"
     return "$?"
@@ -227,7 +227,7 @@ venv::install() {
     echo "This step is skipped if '--skip-lock' or '-s' is specified, or when installing"
     echo "directly from a .lock-file."
     echo
-    echo "The <requirements file> must be in the form '*requirements.[txt|lock]'."
+    echo "The <requirements file> must have file extension '.txt' or '.lock'."
     echo "If no arguments are passed, a default file name of 'requirements.txt'"
     echo "will be used."
     echo
@@ -238,7 +238,7 @@ venv::install() {
     echo
     echo "$ venv install dev-requirements.txt"
     echo
-    echo "$ venv install requirements.txt --skip-lock|-s --no-cache"
+    echo "$ venv install requirements/dev-all.txt --skip-lock|-s --no-cache"
     return "${_success}"
   fi
 
@@ -291,7 +291,7 @@ venv::lock() {
     echo "venv lock [<lock file>|<lock file prefix>]"
     echo
     echo "Lock all installed package versions and write them to <lock file>."
-    echo "The <lock file> must be in the form '*requirements.lock'."
+    echo "The <lock file> must have the file extension '.lock'."
     echo
     echo "If <lock file prefix> is specified instead, locks the requirements to"
     echo "a file called '<lock file prefix>-requirements.lock', e.g."

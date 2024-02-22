@@ -1,3 +1,0 @@
-numpy
-python-json-logger @ git+https://${TEST_TOKEN}@github.com/madzak/python-json-logger
-resolvelib @ git+https://${TEST_USER}:${TEST_PASS}@github.com/sarugaku/resolvelib

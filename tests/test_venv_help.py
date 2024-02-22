@@ -23,6 +23,7 @@ def test_venv_help(arg: str, tmp_path: Path, capfd: pytest.CaptureFixture):
         "create",
         "activate",
         "deactivate",
+        "delete",
         "install",
         "lock",
         "clear",

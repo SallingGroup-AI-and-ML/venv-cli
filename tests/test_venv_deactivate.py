@@ -11,7 +11,7 @@ def test_venv_deactivate(tmp_path: Path):
     run_command("venv deactivate", activated=True, cwd=tmp_path)
 
 
-def test_venv_deactivate_noop(tmp_path: Path, capfd: pytest.CaptureFixture):
+def test_venv_deactivate_noop(tmp_path: Path, capfd: pytest.CaptureFixture[str]):
     """Checks that trying to deactivate an environment that is not activated does nothing"""
     run_command("venv deactivate", cwd=tmp_path)
 

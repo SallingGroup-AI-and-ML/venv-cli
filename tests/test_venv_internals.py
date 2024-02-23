@@ -57,7 +57,7 @@ def test_venv_check_install_requirements_file(filename: str, expected: bool):
             run_command(command)
 
 
-def test_venv_check_install_requirements_file_quiet(capfd: pytest.CaptureFixture):
+def test_venv_check_install_requirements_file_quiet(capfd: pytest.CaptureFixture[str]):
     """Check that 'venv::_check_install_requirements_file' can raise silently if called with -q"""
     # Call command with bad argument, not silenced
     with pytest.raises(subprocess.CalledProcessError):
@@ -109,7 +109,7 @@ def test_venv_check_lock_requirements_file(filename: str, expected_success: bool
             run_command(command)
 
 
-def test_venv_check_lock_requirements_file_quiet(capfd: pytest.CaptureFixture):
+def test_venv_check_lock_requirements_file_quiet(capfd: pytest.CaptureFixture[str]):
     """Check that 'venv::_check_lock_requirements_file' can raise silently if called with -q"""
     # Call command with bad argument, not silenced
     with pytest.raises(subprocess.CalledProcessError):
@@ -136,7 +136,7 @@ def test_venv_check_lock_requirements_file_quiet(capfd: pytest.CaptureFixture):
         ("requirements/requirements.lock", "requirements/requirements.lock"),
     ],
 )
-def test_venv_get_lock_from_requirements(filename: str, expected: str, capfd: pytest.CaptureFixture):
+def test_venv_get_lock_from_requirements(filename: str, expected: str, capfd: pytest.CaptureFixture[str]):
     """Check that 'venv::_get_lock_from_requirements' works as expected"""
     run_command(f'venv::_get_lock_from_requirements "{filename}"')
     result = capfd.readouterr().out.strip()
@@ -155,7 +155,7 @@ def test_venv_get_lock_from_requirements(filename: str, expected: str, capfd: py
         ("requirements/requirements.txt", "requirements/requirements.txt"),
     ],
 )
-def test_venv_get_requirements_from_lock(filename: str, expected: str, capfd: pytest.CaptureFixture):
+def test_venv_get_requirements_from_lock(filename: str, expected: str, capfd: pytest.CaptureFixture[str]):
     """Check that 'venv::_get_requirements_from_lock' works as expected"""
     run_command(f'venv::_get_requirements_from_lock "{filename}"')
     result = capfd.readouterr().out.strip()

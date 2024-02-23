@@ -65,7 +65,7 @@ def test_venv_lock_raises(lock_arg: str, tmp_path: Path):
         "test_venv_fill_credentials.py::test_venv_fill_credentials",
     ]
 )
-def test_venv_lock_echo(tmp_path: Path, capfd: pytest.CaptureFixture):
+def test_venv_lock_echo(tmp_path: Path, capfd: pytest.CaptureFixture[str]):
     """Checks that 'venv lock' echoes a message when executed"""
     run_command("venv lock", activated=True, cwd=tmp_path)
 

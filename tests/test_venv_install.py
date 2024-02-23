@@ -37,7 +37,7 @@ def test_venv_install_requirements(
     requirements_stem: RequirementsStem,
     use_file_name: bool,
     tmp_path: Path,
-    capfd: pytest.CaptureFixture,
+    capfd: pytest.CaptureFixture[str],
 ):
     write_files(files=files, dir=tmp_path)
 
@@ -56,7 +56,7 @@ def test_venv_install_requirements(
     )
 
     # Check pip install log output
-    output: str = capfd.readouterr().out
+    output = capfd.readouterr().out
     assert f"Installing requirements from {requirements_stem.value}.txt" in output
 
     installed_line = [line for line in output.splitlines() if line.startswith("Successfully installed")][0]

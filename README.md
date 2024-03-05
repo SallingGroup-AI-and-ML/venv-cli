@@ -64,7 +64,7 @@ $ sudo apt install python3.10-venv
 The `-venv` part is necessary to be able to use this system python to create virtual environments.
 
 ## Activating and deactivating the virtual environment
-To activate the virtual environment, from the folder containing `.venv` run
+To activate the virtual environment, place yourself _in the folder containing_ the `.venv` folder, then run
 ```console
 $ venv activate
 ```

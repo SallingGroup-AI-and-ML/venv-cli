@@ -144,6 +144,7 @@ venv::activate() {
     echo "venv activate"
     echo
     echo "Activate the virtual environment located in the current folder."
+    echo "This command should be run from the folder containing the '.venv' folder."
     echo
     echo "Examples:"
     echo "$ venv activate"

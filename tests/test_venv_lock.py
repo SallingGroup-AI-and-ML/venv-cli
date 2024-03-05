@@ -34,7 +34,7 @@ def test_venv_lock(
 
     run_command(
         commands=[
-            f"venv install {requirements_stem}.txt --skip-lock",
+            f"venv install -r {requirements_stem}.txt --skip-lock",
             f"venv lock {lock_file_arg}",
         ],
         cwd=tmp_path,

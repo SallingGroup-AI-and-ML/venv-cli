@@ -386,6 +386,155 @@ venv::_add_packages_to_requirements() {
   LC_COLLATE=C sort --ignore-case --stable -o "${requirements_file}" "${requirements_file}"
 }
 
+venv::uninstall() {
+  if venv::_check_if_help_requested "$1"; then
+    echo "venv uninstall <package> [...] [OPTIONS]"
+    echo
+    echo "Remove one or more installed packages from a requirements file, then reinstall the environment from that requirements file."
+    echo "The resulting environment will be locked into a .lock-file."
+    echo
+    echo "The packages to uninsall must be the canonical package names as specified in the requirements file, e.g. 'numpy' or 'scikit-learn'."
+    echo "If specified, the requirements file must have file extension '.txt'."
+    echo "If no requirements file is passed, the command will assume the file 'requirements.txt' is to be used, and will fail if this file cannot be found."
+    echo
+    echo "Options:"
+    echo "  -h, --help                               Show this help and exit."
+    echo "  -r, --requirement <requirements file>    Remove the package(s) from the given requirements file, then reinstall the environment."
+    echo "                                           If not specified, will default to using 'requirements.txt' and will fail if this file does not exist."
+    echo "  -s, --skip-lock                          Skip locking packages to a .lock-file after reinstallation."
+    echo "  --pip-args <ARGS>                        Additional arguments to pass through to pip install on reinstallation."
+    echo
+    echo "Examples:"
+    echo "$ venv uninstall numpy"
+    echo "$ venv uninstall numpy -r requirements.txt"
+    echo "This will remove the 'numpy' requirement from 'requirements.txt', then reinstall the environment from 'requirements.txt' and lock them into 'requirements.lock'."
+    echo
+    echo "$ venv uninstall numpy pandas -r requirements/dev-requirements.txt -s --pip-args='--no-cache --pre'"
+    echo "This will remove 'numpy' and 'pandas' requirements from 'requirements/dev-requirements.txt', then reinstall"
+    echo "all requirements from 'dev-requirements.txt' without locking them."
+    echo "The arguments '--no-cache' and '--pre' are passed on to 'pip install' on reinstallation."
+    return "${_success}"
+  fi
+
+  # Parse arguments. Fail if invalid arguments are passed
+  local TEMP=$(getopt -o 'r:s' --long 'requirement:,skip-lock,pip-args::' -n 'venv uninstall' -- "$@")
+  local _exit="$?"
+  if [ "${_exit}" -ne 0 ]; then
+    return "${_exit}"
+  fi
+
+  local package_names=()  # List of packages to uninstall
+  local requirements_file=""
+  local skip_lock=""
+  local pip_args=""
+
+  eval set -- "$TEMP"  # Unpack the arguments in $TEMP into the positional parameters #1, #2, ...
+  unset TEMP
+
+  # Parse arguments
+  while true; do
+    # -- marks the end of the options, and anything after it is treated as a positional argument.
+    # If "$*" = "--", there are no optional parameters left, and we can break the loop
+    if [ "$*" = "--" ]; then
+      shift
+      break
+    fi
+
+    case "$1" in
+      "-r" | "--requirement")
+        requirements_file="$2"
+        shift 2
+      ;;
+      "-s" | "--skip-lock")
+        skip_lock="--skip-lock"
+        shift
+      ;;
+      "--pip-args")
+        pip_args="$2"
+        shift 2
+      ;;
+      --)
+        # -- marks the end of the options, and anything after it is treated as a positional argument.
+        # For venv uninstall, positional arguments are package names
+        shift
+        package_names+=( "$@" )
+        break
+      ;;
+      *)
+        if [ -z "$1" ]; then
+          break
+        fi
+      ;;
+    esac
+  done
+
+  # Fail if no package names were specified
+  if [ "${#package_names[@]}" -eq 0 ]; then
+    venv::raise "No packages specified, nothing to uninstall. If you want to uninstall everything, use 'venv clear'."
+    return "${_fail}"
+  fi
+
+  # Check the specified requirements file
+  if [ -z "${requirements_file}" ]; then
+    requirements_file="requirements.txt"
+    venv::color_echo "${_yellow}" "No requirements file specified, using requirements.txt"
+  fi
+  if ! venv::_check_install_requirements_file "${requirements_file}"; then
+    # Fail if file name doesn't match required format
+    return "${_fail}"
+  fi
+
+  # Make a temporary backup of the requirements file, in case something fails
+  venv::_create_backup_file "${requirements_file}"
+
+  # Remove package names from requirements file
+  if ! venv::_remove_packages_from_requirements "${requirements_file}" "${package_names[@]}"; then
+    return "${_fail}"
+  fi
+  if [ "$?" -eq 2 ]; then
+    # If none of the packages were found in the requirements file, return without reinstalling
+    venv::_remove_backup_file "${requirements_file}"
+    return "${_success}"
+  fi
+
+  # Remove the backup file if everything went well
+  venv::_remove_backup_file "${requirements_file}"
+
+  # Reinstall the environment from the requirements file. Pass through additional arguments
+  venv::color_echo "${_green}" "Reinstalling requirements from ${requirements_file}"
+  if ! venv::install -r "${requirements_file}" ${skip_lock} --pip-args="${pip_args}"; then
+    return "${_fail}"
+  fi
+}
+
+venv::_remove_packages_from_requirements() {
+  local requirements_file="$1"
+  local package_names=("${@:2}")
+
+  local package_name
+  local packages_removed=0
+  for package_name in "${package_names[@]}"; do
+    # Check if the package is in the requirements file
+    if ! command grep -q "^${package_name}" "${requirements_file}"; then
+      venv::color_echo "${_yellow}" "Package '${package_name}' not found in ${requirements_file}, skipping"
+      continue
+    fi
+    # Remove the package from the requirements file
+    sed -i "/^${package_name}/d" "${requirements_file}"
+    packages_removed=$((packages_removed+1))
+    echo "Removed '${package_name}' from ${requirements_file}"
+  done
+
+  if [ "${packages_removed}" -eq 0 ]; then
+    venv::color_echo "${_yellow}" "None of the specified packages found in ${requirements_file}, nothing to remove"
+    return 2
+  fi
+
+  # Sort requirements file after removing packages. LC_COLLATE is set to C to ensure lines beginning with '-'
+  # are sorted first, instad of being ignored
+  LC_COLLATE=C sort --ignore-case --stable -o "${requirements_file}" "${requirements_file}"
+}
+
 venv::_create_backup_file() {
   local file="$1"
   if [ -f "${file}" ]; then
@@ -488,7 +637,8 @@ venv::help() {
   echo "create         Create a new virtual environment in the current folder"
   echo "activate       Activate the virtual environment in the current folder"
   echo "delete         Delete the virtual environment in the current folder"
-  echo "install        Install requirements from a requirements file in the current environment"
+  echo "install        Install individual packages, or requirements from a requirements file, in the current environment"
+  echo "uninstall      Uninstall packages from the current environment and reinstall from a requirements file"
   echo "lock           Lock installed requirements in a '.lock'-file"
   echo "clear          Remove all installed packages in the current environment"
   echo "deactivate     Deactivate the currently activated virtual environment"
@@ -511,13 +661,14 @@ venv::main() {
       venv::_version
       ;;
 
-    create \
-    | activate \
+    activate \
+    | clear \
+    | create \
+    | deactivate \
     | delete \
     | install \
     | lock \
-    | clear \
-    | deactivate \
+    | uninstall \
     )
       shift
       venv::"${subcommand}" "$@"

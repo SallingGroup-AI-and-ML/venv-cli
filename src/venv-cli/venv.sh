@@ -219,50 +219,115 @@ venv::delete() {
 
 venv::install() {
   if venv::_check_if_help_requested "$1"; then
-    echo "venv install [<requirements file>] [--skip-lock|-s] [<install args>]"
+    echo "venv install [requirement specifiers] [OPTIONS]"
     echo
-    echo "Clear the environment, then install requirements from <requirements file>,"
-    echo "like 'requirements.txt' or 'requirements.lock'."
-    echo "Installed packages are then locked into the corresponding .lock-file,"
-    echo "e.g. 'venv install requirements.txt' will lock packages into 'requirements.lock'."
-    echo "This step is skipped if '--skip-lock' or '-s' is specified, or when installing"
-    echo "directly from a .lock-file."
+    echo "Clear the environment, then install requirements from a requirements file, like 'requirements.txt' or 'requirements.lock'."
+    echo "Installed packages are then locked into the corresponding .lock-file, e.g. 'venv install -r requirements.txt'" will lock packages into
+    echo "'requirements.lock'. This step is skipped if '--skip-lock' or '-s' is specified, or when installing directly from a .lock-file."
     echo
-    echo "The <requirements file> must have file extension '.txt' or '.lock'."
-    echo "If no arguments are passed, a default file name of 'requirements.txt'"
-    echo "will be used."
+    echo "Optionally, additional requirements can be passed as [requirement specifiers], e.g. 'numpy' or 'pandas >= 2.0'."
+    echo "These will first be added to the requirements file, and then the full set of requirements will be installed from the requirements file."
     echo
-    echo "Additional <install args> are passed on to 'pip install'."
+    echo "The requirements file must have file extension '.txt' or '.lock'."
+    echo "If no arguments are passed, a default file name of 'requirements.txt' will be used."
+    echo
+    echo "Options:"
+    echo "  -h, --help                               Show this help and exit."
+    echo "  -r, --requirement <requirements file>    Install from the given requirements file. If requirement specifiers"
+    echo "                                           are passed, they will be added to the requirements file before installation."
+    echo "                                           If not specified, will default to using 'requirements.txt'."
+    echo "  -s, --skip-lock                          Skip locking packages to a .lock-file after installation."
+    echo "  --pip-args <ARGS>                        Additional arguments to pass through to pip install."
     echo
     echo "Examples:"
     echo "$ venv install"
+    echo "$ venv install -r requirements.txt"
+    echo "This will install requirements from 'requirements.txt' and lock them into 'requirements.lock'."
     echo
-    echo "$ venv install dev-requirements.txt"
+    echo "$ venv install numpy"
+    echo "$ venv install numpy -r requirements.txt"
+    echo "This will add 'numpy' to 'requirements.txt', then install all requirements from 'requirements.txt'."
     echo
-    echo "$ venv install requirements/dev-all.txt --skip-lock|-s --no-cache"
+    echo "$ venv install numpy 'pandas >= 2.0' -r requirements/dev-requirements.txt -s --pip-args='--no-cache --pre'"
+    echo "This will add 'numpy' and 'pandas >= 2.0' to 'requirements/dev-requirements.txt', then install"
+    echo "all requirements from 'dev-requirements.txt' without locking them."
+    echo "The arguments '--no-cache' and '--pre' are passed on to 'pip install'."
     return "${_success}"
   fi
 
-  local requirements_file
-  if [ -z "$1" ] || [ "$1" = "--skip-lock" ] || [ "$1" = "-s" ]; then
-    # If no filename was passed
-    requirements_file="requirements.txt"
-
-  else
-    if ! venv::_check_install_requirements_file "$1"; then
-      # Fail if file name doesn't match required format
-      return "${_fail}"
-    fi
-
-    # If full requirements file (.txt or .lock) passed
-    requirements_file="$1"
-    shift
+  # Parse arguments. Fail if invalid arguments are passed
+  local TEMP=$(getopt -o 'r:s' --long 'requirement:,skip-lock,pip-args::' -n 'venv install' -- "$@")
+  local _exit="$?"
+  if [ "${_exit}" -ne 0 ]; then
+    return "${_exit}"
   fi
 
+  local package_args=()  # List of packages to install
+  local requirements_file=""
   local skip_lock=false
-  if [ "$1" = "--skip-lock" ] || [ "$1" = "-s" ]; then
-    skip_lock=true
-    shift
+  local pip_args=""
+
+  eval set -- "$TEMP"  # Unpack the arguments in $TEMP into the positional parameters #1, #2, ...
+
+  # Parse arguments
+  while true; do
+    # -- marks the end of the options, and anything after it is treated as a positional argument.
+    # If "$*" = "--", there are no optional parameters left, and we can break the loop
+    if [ "$*" = "--" ]; then
+      shift
+      break
+    fi
+
+    case "$1" in
+      "-r" | "--requirement")
+        requirements_file="$2"
+        shift 2
+      ;;
+      "-s" | "--skip-lock")
+        skip_lock=true
+        shift
+      ;;
+      "--pip-args")
+        pip_args="$2"
+        shift 2
+      ;;
+      --)
+        # -- marks the end of the options, and anything after it is treated as a positional argument.
+        # For venv install, positional arguments are package specifiers
+        shift
+        package_args+=( "$@" )
+        break
+      ;;
+      *)
+        if [ -z "$1" ]; then
+          break
+        fi
+      ;;
+    esac
+  done
+
+  # Check the specified requirements file
+  if [ -z "${requirements_file}" ]; then
+    requirements_file="requirements.txt"
+    venv::color_echo "${_yellow}" "No requirements file specified, using requirements.txt"
+  fi
+  if ! venv::_check_install_requirements_file "${requirements_file}"; then
+    # Fail if file name doesn't match required format
+    return "${_fail}"
+  fi
+
+  # Add package specifiers to requirements file if they are not already there
+  if [ "${#package_args[@]}" -gt 0 ]; then
+    # Create the requirements file if it doesn't already exist, otherwise the next command will fail
+    if [ ! -f "${requirements_file}" ]; then
+      touch "${requirements_file}"
+    fi
+
+    # Make a temporary backup of the requirements file, in case something fails
+    venv::_create_backup_file "${requirements_file}"
+    if ! venv::_add_packages_to_requirements "${requirements_file}" "${package_args[@]}"; then
+      return "${_fail}"
+    fi
   fi
 
   # Clear the environment before running pip install to avoid orphaned packages
@@ -272,20 +337,68 @@ venv::install() {
   fi
 
   venv::color_echo "${_green}" "Installing requirements from ${requirements_file}"
-  if ! pip install --require-virtualenv --use-pep517 -r "${requirements_file}" "$@"; then
+  # ${pip_args} is unquoted on purpose so it is not passed as a single string argument, but several arguments
+  if ! pip install --require-virtualenv --use-pep517 -r "${requirements_file}" ${pip_args}; then
     return "${_fail}"
   fi
 
+  # Lock the installed packages into a .lock-file
   local lock_file="$(venv::_get_lock_from_requirements "${requirements_file}")"
   if "${skip_lock}" || [ "${requirements_file}" == "${lock_file}" ]; then
     venv::color_echo "${_yellow}" "Skipping locking packages to ${lock_file}"
     return "${_success}"
   fi
-
   venv::lock "${lock_file}"
-  return "$?"  # Return exit status from venv::lock command
+
+  # Remove the backup file if everything went well
+  venv::_remove_backup_file "${requirements_file}"
 }
 
+venv::_add_packages_to_requirements() {
+  local requirements_file="$1"
+  local package_args=("${@:2}")
+
+  local package_spec
+  for package_spec in "${package_args[@]}"; do
+    # Use the sed command to remove everything after the package name in the 'package_spec' string
+    local package_name="$(echo "${package_spec}" | sed -n 's|^\([a-zA-Z][a-zA-Z0-9_-]*\).*$|\1|p')"
+    if [ -z "${package_name}" ]; then
+      # Append the package spec directly to the requirements file if the package name could not be extracted
+      venv::color_echo "${_yellow}" "Could not extract package name from '${package_spec}', adding directly to ${requirements_file}"
+      echo "${package_spec}" >> "${requirements_file}"
+      continue
+    fi
+
+    # Look for the package name in the requirements file
+    if command grep -q "^${package_name}" "${requirements_file}"; then
+      # Replace package from requirements file if it's already there
+      echo "Replacing existing ${package_name} requirement with '${package_spec}' in ${requirements_file}"
+      sed -i "s|^${package_name}.*$|${package_spec}|g" "${requirements_file}"
+    else
+      # Add package to requirements file if it's not already there
+      echo "Adding '${package_spec}' to ${requirements_file}"
+      echo "${package_spec}" >> "${requirements_file}"
+    fi
+  done
+
+  # Sort requirements file after adding packages. LC_COLLATE is set to C to ensure lines beginning with '-'
+  # are sorted first, instad of being ignored
+  LC_COLLATE=C sort --ignore-case --stable -o "${requirements_file}" "${requirements_file}"
+}
+
+venv::_create_backup_file() {
+  local file="$1"
+  if [ -f "${file}" ]; then
+    cp "${file}" "${file}.bak"
+  fi
+}
+
+venv::_remove_backup_file() {
+  local backup_file="$1"
+  if [ -f "${backup_file}.bak" ]; then
+    rm "${backup_file}.bak"
+  fi
+}
 
 venv::lock() {
   if venv::_check_if_help_requested "$1"; then

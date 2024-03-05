@@ -413,10 +413,12 @@ venv::main() {
     *)
       echo $"Unknown subcommand '${subcommand}'. Try 'venv --help' to see available commands."
       ;;
-
   esac
+
+  return "$?"
 }
 
 venv() {
   venv::main "$@"
+  return "$?"
 }

@@ -5,7 +5,7 @@ from functools import wraps
 from pathlib import Path
 from typing import Callable, Optional, TypeVar
 
-from tests.types import P, RawFilesDict, RequirementsDict, RequirementsStem
+from tests.types import P, RawFilesDict, RequirementsDict
 
 RequirementFiles = dict[str, Path]
 current_python_version = f"{sys.version_info.major}.{sys.version_info.minor}"

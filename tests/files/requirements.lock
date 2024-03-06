@@ -1,3 +1,0 @@
-numpy==1.25.2
-python-json-logger @ git+https://${TEST_TOKEN}@github.com/madzak/python-json-logger@5f85723f4693c7289724fdcda84cfc0b62da74d4
-resolvelib @ git+https://${TEST_USER}:${TEST_PASS}@github.com/sarugaku/resolvelib@ea4011ba901b56ab0aa3a7519bc2ffacf8440423

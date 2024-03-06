@@ -1,26 +1,34 @@
 # bash completion for venv                                -*- shell-script -*-
 
 _venv() {
-    local cur_word prev_word _subcommands subcommands help_options
+    local first_word second_word cur_word prev_word _subcommands subcommands help_options
+    first_word="${COMP_WORDS[0]}"
+    second_word="${COMP_WORDS[1]}"
     cur_word="${COMP_WORDS[COMP_CWORD]}"
     prev_word="${COMP_WORDS[COMP_CWORD-1]}"
 
-    _subcommands="activate clear create deactivate delete install lock sync"
+    _subcommands="activate clear create deactivate delete install lock uninstall"
     subcommands=( $(compgen -W "${_subcommands}" -- "${cur_word}") )
     help_options=( $(compgen -W "-h --help" -- "${cur_word}") )
 
-    # Generate completions for subcommand options
     compopt -o nosort
-    case "${prev_word}" in
-        "venv")
-            # If only 'venv' has been entered, generate list of subcommands and options
-            COMPREPLY+=( ${subcommands[*]} )
-            COMPREPLY+=( ${help_options[*]} )
+    if [ "${first_word}" != "venv" ]; then
+        return
+    fi
 
-            local version_options
-            version_options=( $(compgen -W "-V --version" -- "${cur_word}") )
-            COMPREPLY+=( ${version_options[*]} )
-            ;;
+    if [ "${prev_word}" == "venv" ]; then
+        # If only 'venv' has been entered, generate list of subcommands and options
+        COMPREPLY+=( ${subcommands[*]} )
+        COMPREPLY+=( ${help_options[*]} )
+
+        local version_options
+        version_options=( $(compgen -W "-V --version" -- "${cur_word}") )
+        COMPREPLY+=( ${version_options[*]} )
+        return
+    fi
+
+    # Generate completions for subcommand options
+    case "${second_word}" in
         "create")
             # Generate list of all available python3 versions
 
@@ -45,20 +53,34 @@ _venv() {
             COMPREPLY+=( $(compgen -W "-y" -- "${cur_word}") )
             ;;
         "install")
-            # Generate completions for requirement and lock file paths
-            COMPREPLY+=( $(compgen -f -X '!(*.txt|*.lock)' -- "${cur_word}" | sort) )
-            COMPREPLY+=( ${help_options[*]} )
-            compopt -o plusdirs +o nosort  # Add directories after generated completions
+            case "${prev_word}" in
+                "-r"|"--requirement")
+                    # Generate completions for requirement and lock file paths if -r or --requirement is used
+                    COMPREPLY+=( $(compgen -f -X '!(*.txt|*.lock)' -- "${cur_word}" | sort) )
+                    compopt -o plusdirs +o nosort  # Add directories after generated completions
+                    ;;
+                *)
+                    COMPREPLY+=( ${help_options[*]} )
+                    COMPREPLY+=( $(compgen -W "-r --requirement -s --skip-lock --pip-args" -- "${cur_word}") )
+                    ;;
+            esac
+            ;;
+        "uninstall")
+            case "${prev_word}" in
+                "-r"|"--requirement")
+                    # Generate completions for requirements file paths if -r or --requirement is used
+                    COMPREPLY+=( $(compgen -f -X '!(*.txt)' -- "${cur_word}" | sort) )
+                    compopt -o plusdirs +o nosort  # Add directories after generated completions
+                    ;;
+                *)
+                    COMPREPLY+=( ${help_options[*]} )
+                    COMPREPLY+=( $(compgen -W "-r --requirement -s --skip-lock --pip-args" -- "${cur_word}") )
+                    ;;
+            esac
             ;;
         "lock")
             # Generate completions for lock file paths
             COMPREPLY+=( $(compgen -f -X '!(*.lock)' -- "${cur_word}" | sort) )
-            COMPREPLY+=( ${help_options[*]} )
-            compopt -o plusdirs +o nosort  # Add directories after generated completions
-            ;;
-        "sync")
-            # Generate completions for lock file paths
-            COMPREPLY+=( $(compgen -f -X '!*.lock' -- "${cur_word}" | sort) )
             COMPREPLY+=( ${help_options[*]} )
             compopt -o plusdirs +o nosort  # Add directories after generated completions
             ;;

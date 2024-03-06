@@ -6,7 +6,7 @@ from tests.helpers import run_command
 
 
 @pytest.mark.parametrize("arg", ["", "-h", "--help"])
-def test_venv_help(arg: str, tmp_path: Path, capfd: pytest.CaptureFixture):
+def test_venv_help(arg: str, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
     """Checks that we can get the help menu for the main 'venv' command"""
     run_command(f"venv {arg}", cwd=tmp_path)
 
@@ -23,10 +23,11 @@ def test_venv_help(arg: str, tmp_path: Path, capfd: pytest.CaptureFixture):
         "create",
         "activate",
         "deactivate",
+        "delete",
         "install",
+        "uninstall",
         "lock",
         "clear",
-        "sync",
     ],
 )
 @pytest.mark.parametrize("help_arg", ["-h", "--help"])

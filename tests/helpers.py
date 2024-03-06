@@ -3,9 +3,9 @@ import subprocess
 import sys
 from functools import wraps
 from pathlib import Path
-from typing import Callable, Optional
+from typing import Callable, Optional, TypeVar
 
-from tests.types import P, RawFilesDict, RequirementsBase, RequirementsDict
+from tests.types import P, RawFilesDict, RequirementsDict
 
 RequirementFiles = dict[str, Path]
 current_python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
@@ -53,14 +53,15 @@ def run_command(
     result.check_returncode()
 
 
-def collect_requirements(
-    func: Callable[P, tuple[RawFilesDict, RequirementsBase]]
-) -> Callable[P, tuple[RequirementsDict, RequirementsBase]]:
+R = TypeVar("R")
+
+
+def collect_requirements(func: Callable[P, tuple[RawFilesDict, R]]) -> Callable[P, tuple[RequirementsDict, R]]:
     @wraps(func)
-    def wrapper(*args: P.args, **kwargs: P.kwargs) -> tuple[RequirementsDict, RequirementsBase]:
-        files_dict, requirements_base = func(*args, **kwargs)
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> tuple[RequirementsDict, R]:
+        files_dict, other = func(*args, **kwargs)
         requirements_dict = {filename: "\n".join(requirements) for filename, requirements in files_dict.items()}
-        return requirements_dict, requirements_base
+        return requirements_dict, other
 
     return wrapper
 

@@ -7,7 +7,11 @@ RawFilesDict = dict[str, list[str]]
 RequirementsDict = dict[str, str]
 RequirementFiles = dict[str, Path]
 
+PackageName = str
+PackageSpec = str
 
-class RequirementsBase(str, Enum):
+
+class RequirementsStem(str, Enum):
     requirements = "requirements"
     dev_requirements = "dev-requirements"
+    all = "all"

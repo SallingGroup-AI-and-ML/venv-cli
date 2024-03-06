@@ -4,7 +4,7 @@ local curcontext="${curcontext}" state line
 typeset -A opt_args
 
 # List of available options
-local -a subcommands=("create" "activate" "install" "lock" "clear" "sync" "deactivate" "-V" "--version")
+local -a subcommands=("create" "activate" "install" "lock" "clear" "deactivate" "-V" "--version")
 local -a command_options=("-h" "--help")
 local -a all=("${subcommands[@]} ${command_options[@]}")
 

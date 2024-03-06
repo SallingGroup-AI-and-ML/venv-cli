@@ -4,28 +4,31 @@
 
 ## Overview
 `venv-cli` is a CLI tool to help create and manage virtual python environments.
-It uses `pip` and `python -m venv` underneath, and so only requires core python. This alleviates the bootstrapping problem of needing to install a python package using your system `python` and `pip` before you are able to create virtual environments.
+It is built on `pip` and `python -m venv`, and so only requires packages that are already part of the core python installation; no third-party python packages required. This alleviates the bootstrapping problem of needing to install a python package using your system `python` and `pip` before you are able to create virtual environments.
 
 You also don't need `conda`, `pyenv`, `pythonz` etc. to manage your python versions. Just make sure the correct version of python is installed on your system, then reference that specific version when creating the virtual environment, and everything just works. No shims, no path hacks, just the official `python` build.
 
 ## Installation
 
-Clone this repository, then run the `install.sh` script from your favourite shell:
+Clone this repository, then run the `install.sh` script:
 ```console
-$ bash install.sh
+$ ./install.sh
 ```
 This will install the `venv` source file, along with an uninstall script, in `/usr/local/share/venv/`, and add a line in the appropriate shell `rc`-file (e.g. `~/.bashrc`) sourcing the `venv` source script.
 
-This makes the `venv` command avaiable in your terminal. To check if it works, restart the terminal and run
+The default shell is `bash`. To install for a different shell, specify the shell name, e.g.
+```console
+$ ./install.sh zsh
+```
+
+The installation makes the `venv` command available in your terminal. To check if it works, restart the terminal and run
 ```console
 $ venv --version
 venv-cli 1.0.0
 ```
 
-The install script also adds command completions for the invoked shell.
-
 # Uninstall
-To uninstall `venv` and remove all files, run the uninstall script at `/usr/local/share/venv/`:
+To uninstall `venv` and remove all files, run the uninstall script placed at `/usr/local/share/venv/`:
 ```console
 $ bash /usr/local/share/venv/uninstall.sh
 ```
@@ -54,14 +57,13 @@ $ venv create 3.9 venv-name
 
 If you don't have the specific version of python installed yet, you can get it by running
 ```console
-$ sudo apt install python<version>-venv
+$ sudo apt install python<version>
 ```
 e.g.
 ```console
-$ sudo apt install python3.10-venv
+$ sudo apt install python3.10
 ```
-
-The `-venv` part is necessary to be able to use this system python to create virtual environments.
+(or in the case of Debian-based distributions, like Ubuntu, `sudo apt install python3.10-venv`. The `-venv` part is necessary to be able to use the system python to create virtual environments.)
 
 ## Activating and deactivating the virtual environment
 To activate the virtual environment, place yourself _in the folder containing_ the `.venv` folder, then run
@@ -74,64 +76,62 @@ To deactivate it again, run
 $ venv deactivate
 ```
 
-## Install packages/requirements
-The proper way to install packages in the virtual environment is to add them to a `requirements.txt` file and then install from that:
-
+## Install/uninstall packages and requirements
+To install a single package, simply run
 ```console
-$ echo "pandas ~= 1.5" >> requirements.txt
-
-$ venv install requirements.txt
-
-Installing requirements from requirements.txt
-Collecting pandas~=1.5
-  Using cached pandas-1.5.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (12.1 MB)
-Collecting python-dateutil>=2.8.1
-  Using cached python_dateutil-2.8.2-py2.py3-none-any.whl (247 kB)
-Collecting numpy>=1.21.0
-  Using cached numpy-1.25.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (17.6 MB)
-Collecting pytz>=2020.1
-  Using cached pytz-2023.3-py2.py3-none-any.whl (502 kB)
-Collecting six>=1.5
-  Using cached six-1.16.0-py2.py3-none-any.whl (11 kB)
-Installing collected packages: pytz, six, numpy, python-dateutil, pandas
-Successfully installed numpy-1.25.1 pandas-1.5.3 python-dateutil-2.8.2 pytz-2023.3 six-1.16.0
+$ venv install <package>
 ```
 
-In fact, if you don't specify the file name, `venv` will assume that you want to install from `requirements.txt`, so
+This will install the `<package>` in the current environment. However, it does more than that.
+A main design philosophy of `venv-cli` is to always keep the current environment in a reproducible state. For this reason, `venv-cli` aims to always keep a requirements file up to date with that state.
+
+This means that when running `venv install <package>`, the package is first added (or appended) to a `requirements.txt` file in the current folder, and then the command `venv install -r requirements.txt` is run, which clears the entire environment and reinstalls it from scratch using the requirements specified in `requirements.txt`.
+
+Unlike `pip install <package>`, which leaves no trace, this ensures that the `requirements.txt` keeps a record of the packages that have been manually installed.
+
+In the same spirit, `venv uninstall <package>` first removes the package from `requirements.txt`, then runs `venv install -r requirements.txt` to reinstall the environment from scratch. Unlike `pip uninstall <package>`, this ensures that the uninstall does not leave any "orphaned" packages in the current environment (packages that were installed as secondary dependencies, but are no longer needed since the primary dependency has been uninstalled).
+
+### Requirements files
+To specify a different requirements file to install to/uninstall from, use `-r <requirements>` :
 ```console
-$ venv install
-
-$ venv install requirements.txt
+$ venv install numpy 'pandas >= 2.0' -r core.txt
 ```
-are equivalent.
+This will add `numpy` and `pandas >= 2.0` as requirements in `core.txt`, then install from that file. Similarly,
+```console
+$ venv uninstall pandas -r core.txt
+```
+will remove the `pandas >= 2.0` requirement from `core.txt` again, then reinstall the environment using the updated `core.txt`.
 
-The installed packages are then _locked_ into the corresponding `.lock`-file, e.g. running `venv install dev-requirements.txt` will lock those installed packages into `dev-requirements.lock`[^1].
+### Lock files
+When installing or uninstalling packages, the resulting environment is _locked_ into a corresponding `.lock`-file, e.g. running `venv install -r requirements.txt` will lock the installed packages into `requirements.lock`[^1].
 
-Installing packages this way makes sure that they are tracked, since installing them with `pip install` will keep no record of which packages have been installed in the environment, making it difficult to reproduce later on.
+This file is useful if a reproducible install is needed, e.g. when deploying a project to a different machine, or when running a colleagues project. Where `requrements.txt` is used to specify the packages and version your project _needs_ (and nothing more), installing from `requirements.lock` makes sure that you get the exact version of every package.
 
-### Development packages
-If you have both production and development package requirements, keep them in separate requirements-files, e.g. `requirements.txt` for production and `dev-requirements.txt` for development. An example of these could be:
+### Additional requirements
+If you have both production and development package requirements, keep them in separate requirements-files, e.g. `requirements.txt` for production requirements and `test.txt` for requirements needed when running tests. An example of these could be:
 ```bash
 # requirements.txt
 numpy
 pandas ~= 1.5
 
 
-# dev-requirements.txt
+# test.txt
 -r requirements.txt
-jupyter
-matplotlib
+pytest
+pytest-cov
 ```
 
-The `-r requirements.txt` will make sure that installing development requirements also install production requirements.
-
-## Reproducing environment
-To install a reproducible environment, you need to install from a `.lock`-file, since those have all versions of all requirements locked[^1]:
+You can then use either
 ```console
-$ venv install requirements.lock
+$ venv install -r requirements.txt
 ```
 
-This will first clear the environment of any installed packages, then install the packages and versions specified in `requirements.lock`.
+To install production requirements only, or
+```console
+$ venv install -r test.txt
+```
+
+to install both production and test requirements. The `-r requirements.txt` in `test.txt` is what makes sure that installing test requirements also installs the requirements from `requirements.txt`.
 
 ## Clearing the environment
 If you want to manually clear the environment, you can run
@@ -149,19 +149,27 @@ $ venv clear
 $ venv install requirements.txt
 ```
 
+## Deleting the environment
+To completely delete the virtual environment and everything in it, run
+```console
+$ venv delete
+```
+
+(this will not delete any requirement or .lock-files). This will ask for confirmation before deleting the virtual environment. To give immediate confirmation, pass the `-y` flag:
+```console
+$ venv delete -y
+```
+
 ## Contributing
+Before creating a pull request, please open an issue first to discuss what you would like to change.
 
-As this is meant to be a lightweight tool providing simple, QoL improvements to working with `pip` and `python -m venv`, we will not be adding a lot of big, additional features.
-
-That said, pull requests are welcome. For bigger changes, please open an issue first to discuss what you would like to change.
-
-To contribute, clone the repo and create a branch, create a virtual environment (preferably using `venv-cli`) and install `dev-requirements.txt`. When you are done with your changes, run the test suite with
+To contribute, clone the repo and create a branch, create a virtual environment and install `dev-requirements.txt`. When you are done with your changes, run the test suite with
 ```console
 $ pytest .
 ```
 then create a pull request for the `develop` branch.
 
-Every subcommand has its own test file `tests/test_venv_<command>.py` Please make sure to add/update tests as appropriate.
+Every (public) subcommand has its own test file `tests/test_venv_<command>.py` Please make sure to add/update tests as appropriate.
 
 ### Git Flow
 This project follows the [Git Flow](https://nvie.com/posts/a-successful-git-branching-model/) branching model. The default development branch is accordingly named `develop`, and the branch `main` is reserved for tagged releases and hotfixes. Other branches should be named according to their purpose:

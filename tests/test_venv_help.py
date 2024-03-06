@@ -25,6 +25,7 @@ def test_venv_help(arg: str, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
         "deactivate",
         "delete",
         "install",
+        "uninstall",
         "lock",
         "clear",
     ],

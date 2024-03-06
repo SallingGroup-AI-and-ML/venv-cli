@@ -344,7 +344,7 @@ venv::install() {
 
   # Lock the installed packages into a .lock-file
   local lock_file="$(venv::_get_lock_from_requirements "${requirements_file}")"
-  if "${skip_lock}" || [ "${requirements_file}" == "${lock_file}" ]; then
+  if "${skip_lock}" || [ "${requirements_file}" = "${lock_file}" ]; then
     venv::color_echo "${_yellow}" "Skipping locking packages to ${lock_file}"
     return "${_success}"
   fi

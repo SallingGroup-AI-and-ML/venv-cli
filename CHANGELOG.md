@@ -1,9 +1,37 @@
 # Changelog
 
-## [v2.0.0](https://github.com/SallingGroup-AI-and-ML/venv-cli/tree/release/2.0)
+## [v2.0.0](https://github.com/SallingGroup-AI-and-ML/venv-cli/releases/tag/v2.0.0) (2024-03-06)
+
+### Breaking changes
+* `venv install` can now be used to install individual packages: `venv install <package>`. [#37](https://github.com/SallingGroup-AI-and-ML/venv-cli/pull/37)
+
+  To enable this feature, installing from a requirements file now requires the use of the new `-r | --requirement` flags: `venv install -r requirements.txt`. Packages installed using `venv install <package>` are first added to the requirements file before reinstalling the entire environment to ensure reproducibility. To uninstall packages, use the new `venv uninstall` subcommand, e.g. `venv uninstall <package>`.
+* `venv sync` has been removed. Use `venv install -r <requirements>.lock` instead. [#17](https://github.com/SallingGroup-AI-and-ML/venv-cli/pull/17)
 
 ### Major changes
-* `venv sync` has been removed. Use `venv install <requirements>.lock` instead. [#17](https://github.com/SallingGroup-AI-and-ML/venv-cli/pull/17)
+* Added `venv uninstall` subcommand to complement the new functionality of `venv install <package>`. [#37](https://github.com/SallingGroup-AI-and-ML/venv-cli/pull/37)
+
+  Running `venv uninstall <package>` will first remove the package from `requirements.txt`, then use `venv install -r requirements.txt` to reinstall the environment without `<package>`.
+
+  This process ensures that there are no "orphaned dependencies" left in the environment after uninstalling, unlike when using `pip uninstall <package>`.
+* Loosened the file name requirements for `requirements` files. Requirements files can now be any valid file name with the extension `.txt` (`.lock` for lock files). [#35](https://github.com/SallingGroup-AI-and-ML/venv-cli/pull/35)
+
+### Minor changes
+* The `install.sh` script now supports specifying for which shell to install `venv-cli`, e.g. `./install.sh zsh`. [#29](https://github.com/SallingGroup-AI-and-ML/venv-cli/pull/29)
+* Updated virtual environment activation instructions in `README.md` and when running `venv activate -h` [#37](https://github.com/SallingGroup-AI-and-ML/venv-cli/pull/37)
+* Refactored bash completion script to enable better handling of arguments for subcommands. [8ac4daf](https://github.com/SallingGroup-AI-and-ML/venv-cli/pull/32/commits/8ac4daf89314f0ac2c1daf56bee9f4ac489f5004)
+
+### Bug fixes
+* Running the uninstall script now correctly removes the sourcing line from the user's `rc`-file. [#29](https://github.com/SallingGroup-AI-and-ML/venv-cli/pull/29)
+* Running the installation script now adds the sourcing line to the user's `rc`-file only if it is not there already. [#29](https://github.com/SallingGroup-AI-and-ML/venv-cli/pull/29)
+* Running `venv <subcommand>` now correctly returns the exit code from that subcommand. [8b7a54d](https://github.com/SallingGroup-AI-and-ML/venv-cli/commit/8b7a54db77e075760847dba8c12489e7fc4dbd4d)
+* Removed a unit test that was failing sporadically when running tests multiprocessed using `pytest-xdist`. [30c501c](https://github.com/SallingGroup-AI-and-ML/venv-cli/commit/30c501ce1ef43d151ceb22718de80dc9ea9c30ac)
+
+### Internal changes
+* Added several new test cases to cover loosened requirements file name check. [#35](https://github.com/SallingGroup-AI-and-ML/venv-cli/pull/35)
+* Removed unused test files. [8be87d9](https://github.com/SallingGroup-AI-and-ML/venv-cli/commit/8be87d95a75f5b532eaf1fd062796674ce7a764c)
+* Updated test cases for `venv clear` and `venv lock` that use the `venv install` command. [6985681](https://github.com/SallingGroup-AI-and-ML/venv-cli/pull/32/commits/6985681a3b3ac8ae783406e1b76401b7075ea260)
+* Unit test jobs for different shells in CI/CD now run in parallel, speeding up runtime of the CI/CD pipeline. [d2d9ec3](https://github.com/SallingGroup-AI-and-ML/venv-cli/pull/32/commits/d2d9ec3c16169bb87460165a42cbce8284b4efdc)
 
 ## [v1.5.1](https://github.com/SallingGroup-AI-and-ML/venv-cli/releases/tag/v1.5.1) (2024-01-10)
 

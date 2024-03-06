@@ -34,5 +34,4 @@ def test_venv_create_name(venv_name: str, tmp_path: Path):
         prompt_config = [line for line in config.read().splitlines() if "prompt" in line][0]
         actual_prompt = prompt_config.removeprefix("prompt = '").removesuffix("'")
 
-    expected_prompt = f"{venv_name}"
-    assert expected_prompt == actual_prompt
+    assert actual_prompt == venv_name

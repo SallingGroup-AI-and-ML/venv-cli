@@ -8,7 +8,7 @@ from tests.helpers import RequirementFiles
 
 @pytest.fixture
 def create_test_credentials(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Create test credentials for use in requirement files."""
+    """Create test credentials for use in requirements files."""
     monkeypatch.setenv(name="TEST_USER", value="test-user")
     monkeypatch.setenv(name="TEST_PASS", value="test-pass")
     monkeypatch.setenv(name="TEST_TOKEN", value="test-token")

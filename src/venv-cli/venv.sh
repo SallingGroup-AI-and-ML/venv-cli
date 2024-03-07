@@ -342,6 +342,9 @@ venv::install() {
     return "${_fail}"
   fi
 
+  # Remove the backup file if installation went well
+  venv::_remove_backup_file "${requirements_file}"
+
   # Lock the installed packages into a .lock-file
   local lock_file="$(venv::_get_lock_from_requirements "${requirements_file}")"
   if "${skip_lock}" || [ "${requirements_file}" = "${lock_file}" ]; then
@@ -349,9 +352,6 @@ venv::install() {
     return "${_success}"
   fi
   venv::lock "${lock_file}"
-
-  # Remove the backup file if everything went well
-  venv::_remove_backup_file "${requirements_file}"
 }
 
 venv::_add_packages_to_requirements() {

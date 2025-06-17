@@ -183,8 +183,17 @@ hotfix/<branch name>
 support/<branch name>
 ```
 
-Releases are made by simply tagging a release commit on the `main` branch, then creating a GitHub release from that tag.
-The release tag should be a SemVer compliant tag, prefixed by `v`, e.g. `v1.2.3`.
+### Releases
+
+When making a release, e.g. `v1.2.3`, first update the `_version` number in `venv.sh` to `"v1.2.3"`, then add a new header in the `CHANGELOG.md` file, directly under the `## Unreleased` header, with the version number and date, e.g.
+
+```markdown
+## [v1.2.3](https://github.com/SallingGroup-AI-and-ML/venv-cli/releases/tag/v1.2.3) (2025-05-30)
+```
+
+The release tag should follow the format `v<major>.<minor>.<patch>`, e.g. `v1.2.3`.
+
+Then commit the changes, push to `main`, and create a new release on GitHub with the same version number as the tag.
 
 ## License
 

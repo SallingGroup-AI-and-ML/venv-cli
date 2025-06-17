@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+* The project is now following the [Github Flow](https://docs.github.com/en/get-started/using-git-and-github/github-flow) branching model. The `main` branch is now the default branch, and the `develop` branch has been removed. Future development should create a new branch directly from `main`, and when done, creating a pull request back into `main`. Releases should be tagged directly on `main` as well.
+
 ## [v2.0.0](https://github.com/SallingGroup-AI-and-ML/venv-cli/releases/tag/v2.0.0) (2024-03-06)
 
 ### Breaking changes

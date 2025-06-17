@@ -168,12 +168,13 @@ To contribute, clone the repo and create a branch, create a virtual environment 
 ```console
 $ pytest .
 ```
-then create a pull request for the `develop` branch.
+then create a pull request for the `main` branch.
 
 Every (public) subcommand has its own test file `tests/test_venv_<command>.py` Please make sure to add/update tests as appropriate.
 
-### Git Flow
-This project follows the [Git Flow](https://nvie.com/posts/a-successful-git-branching-model/) branching model. The default development branch is accordingly named `develop`, and the branch `main` is reserved for tagged releases and hotfixes. Other branches should be named according to their purpose:
+### Branches
+When creating a new branch, please prefix them with one of the following:
+
 ```
 feature/<branch name>
 bugfix/<branch name>
@@ -182,7 +183,8 @@ hotfix/<branch name>
 support/<branch name>
 ```
 
-Releases are made by creating a branch `release/vX.X.X` from `develop`, where `X.X.X` represents the release version number, following [SemVer](https://semver.org/). This freezes the version number of **this release**, and no more features from `develop` should be merged into this release (only `bugfix/`). When the `release/` branch is ready for release, merge it into `main` and tag the commit with the release version, then merge the `release/` branch back into `develop` (resolving any merge conflicts) to get the bugfixes included there as well.
+Releases are made by simply tagging a release commit on the `main` branch, then creating a GitHub release from that tag.
+The release tag should be a SemVer compliant tag, prefixed by `v`, e.g. `v1.2.3`.
 
 ## License
 

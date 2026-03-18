@@ -27,7 +27,7 @@ def venv_dir(tmp_path: Path) -> RequirementFiles:
     files = RequirementFiles(
         {
             "base": dst,
-            **{file.name: copy2(src=file, dst=dst / file.name) for file in src.glob("*requirements.*")},
+            **{file.name: Path(copy2(src=file, dst=dst / file.name)) for file in src.glob("*requirements.*")},
         }
     )
     return files

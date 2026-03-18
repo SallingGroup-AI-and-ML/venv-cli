@@ -6,7 +6,7 @@
 
 ### Internal changes
 
-- Updated `black` version in `dev-requirements.txt` to `>= 26.3.1` to fix [CVE-2026-32274](https://github.com/SallingGroup-AI-and-ML/venv-cli/security/dependabot/2). [b83a234](https://github.com/SallingGroup-AI-and-ML/venv-cli/commit/b83a2340afd210411cfc7763ae253fa38c4c8845)
+* Updated `black` version in `dev-requirements.txt` to `>= 26.3.1` to fix [CVE-2026-32274](https://github.com/SallingGroup-AI-and-ML/venv-cli/security/dependabot/2). [b83a234](https://github.com/SallingGroup-AI-and-ML/venv-cli/commit/b83a2340afd210411cfc7763ae253fa38c4c8845)
 
 ## [v2.0.0](https://github.com/SallingGroup-AI-and-ML/venv-cli/releases/tag/v2.0.0) (2024-03-06)
 

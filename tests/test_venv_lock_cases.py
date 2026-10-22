@@ -1,4 +1,4 @@
-from tests.helpers import collect_requirements
+from tests.helpers import collect_requirements, numpy_version
 from tests.types import RawFilesDict, RequirementsStem
 
 
@@ -28,11 +28,11 @@ class CasesVenvLock:
 
         dev_requirements_txt = [
             "-r requirements.txt",
-            "numpy==1.26.0",
+            f"numpy=={numpy_version}",
         ]
 
         dev_requirements_lock = [
-            "numpy==1.26.0",
+            f"numpy=={numpy_version}",
             "python-json-logger==2.0.7",
         ]
 

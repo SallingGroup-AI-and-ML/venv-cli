@@ -26,15 +26,15 @@ def test_venv_lock(
     """Checks that we can lock requirements in an environment after installing them"""
     write_files(files=files, dir=tmp_path)
 
-    lock_file_path = f"{requirements_stem}.lock"
+    lock_file_path = f"{requirements_stem.value}.lock"
     if use_short_name:
-        lock_file_arg = requirements_stem.split("-")[0] if "-" in requirements_stem else ""
+        lock_file_arg = requirements_stem.split("-")[0] if "-" in requirements_stem.value else ""
     else:
         lock_file_arg = lock_file_path
 
     run_command(
         commands=[
-            f"venv install -r {requirements_stem}.txt --skip-lock",
+            f"venv install -r {requirements_stem.value}.txt --skip-lock",
             f"venv lock {lock_file_arg}",
         ],
         cwd=tmp_path,

@@ -46,6 +46,7 @@ _venv() {
                 ) )
             COMPREPLY+=( ${python_versions[*]} )
             COMPREPLY+=( ${help_options[*]} )
+            COMPREPLY+=( $(compgen -W "--no-pip-upgrade" -- "${cur_word}") )
             ;;
         "delete")
             # Generate completion for help_options plus the '-y' option

@@ -17,6 +17,7 @@ from tests.test_venv_install_cases import (
 from tests.types import PackageName, PackageSpec, RequirementsDict, RequirementsStem
 
 _package_name_regex = re.compile(r"^([a-zA-Z0-9_-]+)\b")
+_package_installed_regex = re.compile(r"^Successfully installed (?!pip-[0-9]+.*$)(.+)$")
 
 
 def _check_package_was_installed(requirement: str, installed_line: str) -> None:
@@ -44,7 +45,7 @@ def test_venv_install_not_activated(tmp_path: Path, monkeypatch: pytest.MonkeyPa
 
 _pjl = ["python-json-logger", "python-json-logger==2.0.7", "'python-json-logger == 2.0.7'"]
 _urllib = ["urllib3", "urllib3==2.2.1", "'urllib3 == 2.2.1'"]
-_wheel = ["wheel", "wheel==0.42.0", "'wheel == 0.42.0'"]
+_attrs = ["attrs", "attrs==25.4.0", "'attrs == 25.4.0'"]
 
 
 @pytest.mark.order(after="test_venv_activate.py::test_venv_activate")
@@ -53,7 +54,7 @@ _wheel = ["wheel", "wheel==0.42.0", "'wheel == 0.42.0'"]
     [
         *itertools.product(itertools.product(_pjl), [("python-json-logger",)]),
         *itertools.product(itertools.product(_pjl, _urllib), [("python-json-logger", "urllib3")]),
-        *itertools.product(itertools.product(_pjl, _urllib, _wheel), [("python-json-logger", "urllib3", "wheel")]),
+        *itertools.product(itertools.product(_pjl, _urllib, _attrs), [("python-json-logger", "urllib3", "attrs")]),
     ],
 )
 def test_venv_install_packages(
@@ -74,7 +75,7 @@ def test_venv_install_packages(
     assert f"Installing" in output
 
     # Check that the expected packages were installed
-    installed_line = [line for line in output.splitlines() if line.startswith("Successfully installed")][0]
+    installed_line = [line for line in output.splitlines() if _package_installed_regex.match(line)][0]
     for package in expected_packages:
         _check_package_was_installed(requirement=package, installed_line=installed_line)
 
@@ -131,7 +132,7 @@ def test_venv_install_requirements(
     output = capfd.readouterr().out
     assert f"Installing requirements from {requirements_stem.value}.txt" in output
 
-    installed_line = [line for line in output.splitlines() if line.startswith("Successfully installed")][0]
+    installed_line = [line for line in output.splitlines() if _package_installed_regex.match(line)][0]
     requirement_lines = chain.from_iterable(contents.splitlines() for contents in files.values())
     for requirement in requirement_lines:
         if requirement.startswith("-r"):
@@ -151,9 +152,9 @@ def test_venv_install_requirements_with_lock(
     write_files(files=files, dir=tmp_path)
 
     run_command(
-        f"venv install -r {requirements_stem}.txt",
+        f"venv install -r {requirements_stem.value}.txt",
         cwd=tmp_path,
         activated=True,
     )
 
-    assert (tmp_path / f"{requirements_stem}.lock").exists()
+    assert (tmp_path / f"{requirements_stem.value}.lock").exists()

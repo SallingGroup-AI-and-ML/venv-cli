@@ -69,6 +69,14 @@ This creates a virtual environment using the `python3.9` executable on `$PATH`. 
 $ venv create 3.9 venv-name
 ```
 
+By default, pip is upgraded in the new virtual environment using `pip install --upgrade pip`.
+To skip this step (for example, when working offline), pass `--no-pip-upgrade`:
+
+```console
+$ venv create 3.9 --no-pip-upgrade
+$ venv create 3.9 venv-name --no-pip-upgrade
+```
+
 If you don't have the specific version of python installed yet, you can get it by running
 
 ```console

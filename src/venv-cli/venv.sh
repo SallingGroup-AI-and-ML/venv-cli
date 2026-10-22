@@ -113,12 +113,12 @@ venv::create() {
     return "${_success}"
   fi
 
-  local upgrade_pip=""
+  local upgrade_pip="--upgrade-deps"
   local positional_args=()
   while [ "$#" -gt 0 ]; do
     case "$1" in
       --no-pip-upgrade)
-        upgrade_pip="--upgrade-deps"
+        upgrade_pip=""
         ;;
       --)
         shift

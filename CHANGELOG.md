@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [v2.1.0](https://github.com/SallingGroup-AI-and-ML/venv-cli/releases/tag/v2.1.0) (2026-10-22)
+
 ### Minor changes
 
 * Added `-c | --constraint <constraints file>` to `venv install`. The flag and filename are passed through to `pip install`, and the option can be repeated to use multiple constraints files.

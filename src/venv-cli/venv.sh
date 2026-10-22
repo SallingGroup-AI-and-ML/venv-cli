@@ -264,6 +264,8 @@ venv::install() {
     echo "  -r, --requirement <requirements file>    Install from the given requirements file. If requirement specifiers"
     echo "                                           are passed, they will be added to the requirements file before installation."
     echo "                                           If not specified, will default to using 'requirements.txt'."
+    echo "  -c, --constraint <constraints file>      Constrain package versions using the given file. Passed through to pip install."
+    echo "                                           Can be specified multiple times."
     echo "  -s, --skip-lock                          Skip locking packages to a .lock-file after installation."
     echo "  --pip-args <ARGS>                        Additional arguments to pass through to pip install."
     echo
@@ -284,7 +286,8 @@ venv::install() {
   fi
 
   # Parse arguments. Fail if invalid arguments are passed
-  local TEMP=$(getopt -o 'r:s' --long 'requirement:,skip-lock,pip-args::' -n 'venv install' -- "$@")
+  local TEMP
+  TEMP=$(getopt -o 'r:sc:' --long 'requirement:,skip-lock,constraint:,pip-args::' -n 'venv install' -- "$@")
   local _exit="$?"
   if [ "${_exit}" -ne 0 ]; then
     return "${_exit}"
@@ -294,6 +297,7 @@ venv::install() {
   local requirements_file=""
   local skip_lock=false
   local pip_args=""
+  local constraint_args=()
 
   eval set -- "$TEMP"  # Unpack the arguments in $TEMP into the positional parameters #1, #2, ...
 
@@ -314,6 +318,10 @@ venv::install() {
       "-s" | "--skip-lock")
         skip_lock=true
         shift
+      ;;
+      "-c" | "--constraint")
+        constraint_args+=( "$1" "$2" )
+        shift 2
       ;;
       "--pip-args")
         pip_args="$2"
@@ -366,7 +374,7 @@ venv::install() {
 
   venv::color_echo "${_green}" "Installing requirements from ${requirements_file}"
   # ${pip_args} is unquoted on purpose so it is not passed as a single string argument, but several arguments
-  if ! pip install --require-virtualenv --use-pep517 -r "${requirements_file}" ${pip_args}; then
+  if ! pip install --require-virtualenv --use-pep517 -r "${requirements_file}" "${constraint_args[@]}" ${pip_args}; then
     return "${_fail}"
   fi
 

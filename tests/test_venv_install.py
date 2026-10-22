@@ -4,6 +4,7 @@ import subprocess
 from collections.abc import Collection
 from itertools import chain
 from pathlib import Path
+from shlex import quote
 
 import pytest
 from pytest_cases import parametrize, parametrize_with_cases
@@ -41,6 +42,73 @@ def test_venv_install_not_activated(tmp_path: Path, monkeypatch: pytest.MonkeyPa
     with pytest.raises(subprocess.CalledProcessError), monkeypatch.context() as m:
         m.delenv("VIRTUAL_ENV", raising=False)
         run_command(["venv install"], cwd=tmp_path, activated=False)
+
+
+_mock_install_commands = [
+    "venv::clear() { touch clear-called; }",
+    'pip() { printf "%s\\n" "$@" > pip-args; return "${PIP_EXIT_CODE:-0}"; }',
+    'venv::lock() { printf "%s\\n" "$@" > lock-args; }',
+]
+
+
+@pytest.mark.parametrize(
+    "constraint_args",
+    [
+        [],
+        ["-c", "constraints.txt"],
+        ["--constraint", "constraints.txt"],
+        ["-c", "constraints with spaces"],
+        ["--constraint", "constraints' file"],
+        ["-c", "first.txt", "--constraint", "second.lock"],
+    ],
+)
+def test_venv_install_constraints(constraint_args: list[str], tmp_path: Path):
+    (tmp_path / "requirements.txt").write_text("")
+    args = " ".join(quote(arg) for arg in constraint_args)
+    run_command(
+        [
+            *_mock_install_commands,
+            f"venv install demo-package -r requirements.txt {args} --pip-args='--no-cache-dir --pre'",
+        ],
+        cwd=tmp_path,
+    )
+
+    assert (tmp_path / "pip-args").read_text().splitlines() == [
+        "install",
+        "--require-virtualenv",
+        "--use-pep517",
+        "-r",
+        "requirements.txt",
+        *constraint_args,
+        "--no-cache-dir",
+        "--pre",
+    ]
+    assert (tmp_path / "requirements.txt").read_text() == "demo-package\n"
+    assert (tmp_path / "lock-args").read_text() == "requirements.lock\n"
+
+
+@pytest.mark.parametrize("flag", ["-c", "--constraint"])
+def test_venv_install_constraint_requires_filename(flag: str, tmp_path: Path):
+    with pytest.raises(subprocess.CalledProcessError):
+        run_command([*_mock_install_commands, f"venv install {flag}"], cwd=tmp_path)
+    assert not (tmp_path / "clear-called").exists()
+    assert not (tmp_path / "pip-args").exists()
+
+
+def test_venv_install_constraint_pip_failure(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setenv("PIP_EXIT_CODE", "1")
+    with pytest.raises(subprocess.CalledProcessError):
+        run_command(
+            [*_mock_install_commands, "venv install -c missing.txt"],
+            cwd=tmp_path,
+        )
+    assert (tmp_path / "pip-args").exists()
+    assert not (tmp_path / "lock-args").exists()
+
+
+def test_venv_install_help_documents_constraints(tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+    run_command("venv install --help", cwd=tmp_path)
+    assert "-c, --constraint <constraints file>" in capfd.readouterr().out
 
 
 _pjl = ["python-json-logger", "python-json-logger==2.0.7", "'python-json-logger == 2.0.7'"]

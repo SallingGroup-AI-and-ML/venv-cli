@@ -55,6 +55,10 @@ _venv() {
             ;;
         "install")
             case "${prev_word}" in
+                "-c"|"--constraint")
+                    COMPREPLY+=( $(compgen -f -- "${cur_word}" | sort) )
+                    compopt -o plusdirs +o nosort
+                    ;;
                 "-r"|"--requirement")
                     # Generate completions for requirement and lock file paths if -r or --requirement is used
                     COMPREPLY+=( $(compgen -f -X '!(*.txt|*.lock)' -- "${cur_word}" | sort) )
@@ -62,7 +66,7 @@ _venv() {
                     ;;
                 *)
                     COMPREPLY+=( ${help_options[*]} )
-                    COMPREPLY+=( $(compgen -W "-r --requirement -s --skip-lock --pip-args" -- "${cur_word}") )
+                    COMPREPLY+=( $(compgen -W "-r --requirement -c --constraint -s --skip-lock --pip-args" -- "${cur_word}") )
                     ;;
             esac
             ;;

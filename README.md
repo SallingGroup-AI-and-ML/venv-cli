@@ -138,6 +138,20 @@ $ venv uninstall pandas -r core.txt
 
 will remove the `pandas >= 2.0` requirement from `core.txt` again, then reinstall the environment using the updated `core.txt`.
 
+### Constraints files
+
+Use `-c <constraints file>` or `--constraint <constraints file>` to constrain package
+versions, just like with `pip install`:
+
+```console
+$ venv install -r requirements.txt -c constraints.txt
+$ venv install numpy --constraint constraints.txt
+```
+
+The flag and filename are passed through to `pip install`. Constraints do not add
+packages to the requirements file. The option can be repeated to use multiple
+constraints files.
+
 ### Lock files
 
 When installing or uninstalling packages, the resulting environment is _locked_ into a corresponding `.lock`-file, e.g. running `venv install -r requirements.txt` will lock the installed packages into `requirements.lock`[^1].

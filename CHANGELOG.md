@@ -4,9 +4,15 @@
 
 ### Minor changes
 
+* Added `-c | --constraint <constraints file>` to `venv install`. The flag and filename are passed through to `pip install`, and the option can be repeated to use multiple constraints files.
+
 * `venv create` now upgrades pip after creating a virtual environment. Pass `--no-pip-upgrade` to skip this step.
 
 * The project is now following the [Github Flow](https://docs.github.com/en/get-started/using-github/github-flow) branching model. The `main` branch is now the default branch, and the `develop` branch has been removed. Future development should create a new branch directly from `main`, and when done, creating a pull request back into `main`. Releases should be tagged directly on `main` as well.
+
+### Bug fixes
+
+* `venv install` now stops on invalid options or missing option arguments before clearing the environment.
 
 ### Internal changes
 

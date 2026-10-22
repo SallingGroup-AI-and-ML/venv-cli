@@ -373,8 +373,14 @@ venv::install() {
   fi
 
   venv::color_echo "${_green}" "Installing requirements from ${requirements_file}"
-  # ${pip_args} is unquoted on purpose so it is not passed as a single string argument, but several arguments
-  if ! pip install --require-virtualenv --use-pep517 -r "${requirements_file}" "${constraint_args[@]}" ${pip_args}; then
+  local pip_install_args=()
+  if [ -n "${ZSH_VERSION:-}" ]; then
+    # zsh requires explicit word splitting for scalar expansions.
+    pip_install_args=( ${=pip_args} )
+  else
+    pip_install_args=( ${pip_args} )
+  fi
+  if ! pip install --require-virtualenv --use-pep517 -r "${requirements_file}" "${constraint_args[@]}" "${pip_install_args[@]}"; then
     return "${_fail}"
   fi
 

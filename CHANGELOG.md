@@ -12,6 +12,8 @@
 
 ### Bug fixes
 
+* `venv install` now splits `--pip-args` into separate arguments in zsh as well as bash, including when reinstalling via `venv uninstall`.
+
 * `venv install` now stops on invalid options or missing option arguments before clearing the environment.
 
 ### Internal changes

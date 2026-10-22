@@ -87,6 +87,37 @@ def test_venv_install_constraints(constraint_args: list[str], tmp_path: Path):
     assert (tmp_path / "lock-args").read_text() == "requirements.lock\n"
 
 
+@pytest.mark.parametrize("command", ["install", "uninstall demo-package"])
+@pytest.mark.parametrize(
+    ("pip_args", "expected_args"),
+    [
+        (None, []),
+        ("", []),
+        (" \t\n ", []),
+        ("--pre", ["--pre"]),
+        ("--no-cache-dir --pre", ["--no-cache-dir", "--pre"]),
+        (" \t--no-cache-dir \n --pre\t ", ["--no-cache-dir", "--pre"]),
+    ],
+)
+def test_venv_install_pip_args(command: str, pip_args: str | None, expected_args: list[str], tmp_path: Path):
+    (tmp_path / "requirements.txt").write_text("demo-package\n")
+    option = "" if pip_args is None else f"--pip-args={quote(pip_args)}"
+    run_command(
+        [*_mock_install_commands, f"venv {command} -r requirements.txt {option}"],
+        cwd=tmp_path,
+    )
+
+    assert (tmp_path / "pip-args").read_text().splitlines() == [
+        "install",
+        "--require-virtualenv",
+        "--use-pep517",
+        "-r",
+        "requirements.txt",
+        *expected_args,
+    ]
+    assert (tmp_path / "lock-args").read_text() == "requirements.lock\n"
+
+
 @pytest.mark.parametrize("flag", ["-c", "--constraint"])
 def test_venv_install_constraint_requires_filename(flag: str, tmp_path: Path):
     with pytest.raises(subprocess.CalledProcessError):

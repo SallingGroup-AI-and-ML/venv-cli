@@ -90,12 +90,16 @@ venv::_get_requirements_from_lock() {
 
 venv::create() {
   if venv::_check_if_help_requested "$1"; then
-    echo "venv create <python-version> [<name>]"
+    echo "venv create <python-version> [<name>] [--no-pip-upgrade]"
     echo
     echo "Create a new virtual environment using python version <python-version>."
     echo "The virtual environment will be placed in '.venv',"
     echo "and when activated will be named the same as the containing folder."
     echo "It is also possible to specify the name that will be used in the shell prompt."
+    echo "By default, pip is upgraded after the virtual environment is created."
+    echo
+    echo "Options:"
+    echo "  --no-pip-upgrade    Skip upgrading pip in the new virtual environment."
     echo
     echo 'Requires an executable python of version <python-version> on $PATH'
     echo
@@ -108,6 +112,30 @@ venv::create() {
     echo "called 'my-folder' using python3.9."
     return "${_success}"
   fi
+
+  local upgrade_pip="--upgrade-deps"
+  local positional_args=()
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --no-pip-upgrade)
+        upgrade_pip=""
+        ;;
+      --)
+        shift
+        positional_args+=( "$@" )
+        break
+        ;;
+      -*)
+        venv::raise "Unknown option for 'venv create': $1"
+        return "$?"
+        ;;
+      *)
+        positional_args+=( "$1" )
+        ;;
+    esac
+    shift
+  done
+  set -- "${positional_args[@]}"
 
   if [ -z "$1" ]; then
     venv::raise "You need to specify the python version to use, e.g. 'venv-create 3.10'"
@@ -134,7 +162,7 @@ venv::create() {
 
   local full_python_version="$(${python_executable} -V)"
   venv::color_echo "${_green}" "Creating virtual environment '${venv_name}' using ${full_python_version}"
-  ${python_executable} -m venv .venv --prompt "${venv_prompt}"
+  ${python_executable} -m venv .venv ${upgrade_pip} --prompt "${venv_prompt}"
 }
 
 

@@ -15,18 +15,18 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v7
 
     - name: Set up Python 3.10
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v7
       with:
         python-version: "3.10"
 
+
     - name: Install dependencies
       run: |
-        python3.10 -m venv .venv
+        python3.10 -m venv .venv --upgrade-deps
         . .venv/bin/activate
-        python -m pip install --require-virtualenv --upgrade pip
         python -m pip install --require-virtualenv -r dev-requirements.txt
 
     - name: Check linting/formatting
@@ -39,19 +39,21 @@ jobs:
   test-bash:
     runs-on: ubuntu-latest
     needs: lint
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v7
 
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v7
       with:
-        python-version: "3.10"
+        python-version: ${{ matrix.python-version }}
 
     - name: Install dependencies
       run: |
-        python3.10 -m venv .venv
+        python${{ matrix.python-version }} -m venv .venv --upgrade-deps
         . .venv/bin/activate
-        python -m pip install --require-virtualenv --upgrade pip
         python -m pip install --require-virtualenv -r dev-requirements.txt
 
     - name: Test with pytest (bash)
@@ -64,22 +66,24 @@ jobs:
   test-zsh:
     runs-on: ubuntu-latest
     needs: lint
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v7
 
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v7
       with:
-        python-version: "3.10"
+        python-version: ${{ matrix.python-version }}
 
     - name: Install zsh
       run: sudo apt-get update; sudo apt-get install -y zsh
 
     - name: Install dependencies
       run: |
-        python3.10 -m venv .venv
+        python${{ matrix.python-version }} -m venv .venv --upgrade-deps
         . .venv/bin/activate
-        python -m pip install --require-virtualenv --upgrade pip
         python -m pip install --require-virtualenv -r dev-requirements.txt
 
     - name: Test with pytest (zsh)

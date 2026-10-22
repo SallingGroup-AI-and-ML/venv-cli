@@ -11,6 +11,11 @@ RequirementFiles = dict[str, Path]
 current_python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
 _venv_cli_path = Path.cwd() / "src" / "venv-cli" / "venv.sh"
 
+if sys.version_info < (3, 11):
+    numpy_version = "1.26.0"
+else:
+    numpy_version = "2.4.0"
+
 
 def _command_setup(venv_cli_path: Path, activate: bool = False) -> list[str]:
     bash = [os.environ["SHELL"], "-c"]

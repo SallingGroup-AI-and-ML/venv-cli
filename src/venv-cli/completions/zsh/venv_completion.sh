@@ -9,6 +9,10 @@ local -a command_options=("-h" "--help")
 local -a all=("${subcommands[@]} ${command_options[@]}")
 
 case "${words}[2]" in
+    create)
+        command_options+=("--no-pip-upgrade")
+        _describe "option" command_options
+        ;;
     "${subcommands}")
         # Complete the options if the second word matches any of the available options
         _describe "option" command_options

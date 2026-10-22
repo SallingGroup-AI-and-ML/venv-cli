@@ -2,7 +2,7 @@ import itertools
 
 from pytest_cases import parametrize
 
-from tests.helpers import collect_requirements
+from tests.helpers import collect_requirements, numpy_version
 from tests.types import PackageName, PackageSpec, RawFilesDict, RequirementsStem
 
 
@@ -33,7 +33,7 @@ class CasesVenvInstallRequirementstxt:
 
         dev_requirements_txt = [
             "-r requirements.txt",
-            "numpy==1.26.0",
+            f"numpy=={numpy_version}",
         ]
 
         files = {
@@ -50,7 +50,7 @@ class CasesVenvInstallRequirementstxt:
 
         dev_requirements_txt = [
             "-r requirements.txt",
-            "numpy==1.26.0",
+            f"numpy=={numpy_version}",
         ]
 
         files = {
@@ -77,7 +77,7 @@ class CasesVenvInstallRequirementstxt:
             "-r core.txt",
             "-r test.txt",
             "-r lint.txt",
-            "numpy==1.26.0",
+            f"numpy=={numpy_version}",
         ]
 
         files = {
@@ -107,7 +107,7 @@ class CasesVenvInstallWithLock:
 
         dev_requirements_txt = [
             "-r requirements.txt",
-            "numpy==1.26.0",
+            f"numpy=={numpy_version}",
         ]
 
         files = {
@@ -138,7 +138,7 @@ class CasesVenvAddPackagesToRequirements:
         self, version: str
     ) -> tuple[RawFilesDict, tuple[RequirementsStem, list[tuple[PackageName, PackageSpec]]]]:
         requirements_txt = [
-            "numpy==1.26.0",
+            f"numpy=={numpy_version}",
         ]
 
         name_spec: list[tuple[PackageName, PackageSpec]] = [
@@ -148,23 +148,23 @@ class CasesVenvAddPackagesToRequirements:
         files = {"requirements.txt": requirements_txt}
         return files, (RequirementsStem.requirements, name_spec)
 
-    @parametrize("version", ["", "==2.0.7", " == 2.0.7"])
+    @parametrize("pjl_version", ["", "==2.0.7", " == 2.0.7"])
     @collect_requirements
     def case_has_several_add_one(
-        self, version: str
+        self, pjl_version: str
     ) -> tuple[RawFilesDict, tuple[RequirementsStem, list[tuple[PackageName, PackageSpec]]]]:
         core_txt = [
-            "wheel",
+            "attrs",
         ]
 
         requirements_txt = [
             "-r core.txt",
-            "numpy==1.26.0",
+            f"numpy=={numpy_version}",
             "requests",
         ]
 
         name_spec: list[tuple[PackageName, PackageSpec]] = [
-            ("python-json-logger", f"python-json-logger{version}"),
+            ("python-json-logger", f"python-json-logger{pjl_version}"),
         ]
 
         files = {"core.txt": core_txt, "requirements.txt": requirements_txt}
@@ -179,12 +179,12 @@ class CasesVenvAddPackagesToRequirements:
         self, versions: tuple[str, str]
     ) -> tuple[RawFilesDict, tuple[RequirementsStem, list[tuple[PackageName, PackageSpec]]]]:
         core_txt = [
-            "wheel",
+            "attrs",
         ]
 
         requirements_txt = [
             "-r core.txt",
-            "numpy==1.26.0",
+            f"numpy=={numpy_version}",
             "requests",
         ]
 

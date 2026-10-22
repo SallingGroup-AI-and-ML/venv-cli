@@ -22,11 +22,11 @@ jobs:
       with:
         python-version: "3.10"
 
+
     - name: Install dependencies
       run: |
-        python3.10 -m venv .venv
+        python3.10 -m venv .venv --upgrade-deps
         . .venv/bin/activate
-        python -m pip install --require-virtualenv --upgrade pip
         python -m pip install --require-virtualenv -r dev-requirements.txt
 
     - name: Check linting/formatting
@@ -49,9 +49,8 @@ jobs:
 
     - name: Install dependencies
       run: |
-        python3.10 -m venv .venv
+        python3.10 -m venv .venv --upgrade-deps
         . .venv/bin/activate
-        python -m pip install --require-virtualenv --upgrade pip
         python -m pip install --require-virtualenv -r dev-requirements.txt
 
     - name: Test with pytest (bash)
@@ -77,9 +76,8 @@ jobs:
 
     - name: Install dependencies
       run: |
-        python3.10 -m venv .venv
+        python3.10 -m venv .venv --upgrade-deps
         . .venv/bin/activate
-        python -m pip install --require-virtualenv --upgrade pip
         python -m pip install --require-virtualenv -r dev-requirements.txt
 
     - name: Test with pytest (zsh)

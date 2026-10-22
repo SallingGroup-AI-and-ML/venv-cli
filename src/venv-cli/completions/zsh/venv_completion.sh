@@ -9,6 +9,17 @@ local -a command_options=("-h" "--help")
 local -a all=("${subcommands[@]} ${command_options[@]}")
 
 case "${words}[2]" in
+    install)
+        case "${words}[CURRENT-1]" in
+            -c|--constraint)
+                _files
+                ;;
+            *)
+                command_options+=("-c" "--constraint")
+                _describe "option" command_options
+                ;;
+        esac
+        ;;
     create)
         command_options+=("--no-pip-upgrade")
         _describe "option" command_options
